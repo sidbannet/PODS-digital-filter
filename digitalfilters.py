@@ -107,7 +107,7 @@ def adapt1d(yu,yv,yw,uin,uuin,vvin,wwin,uwin,jma,kma):
       R[1,1] = vvin[k]
       R[2,2] = wwin[k]
       R[0,2] = uwin[k]
-      R[2,0] = -uwin[k]
+      R[2,0] = -uwin[k] 
 	 
       A[:,:] = 1.0
       A[0,0] = np.sqrt(R[0,0])	 
@@ -141,30 +141,37 @@ def adapt2prf(yu,yv,yw,uin,vin,win,uuin,vvin,wwin,uvin,uwin,vwin,jma,kma):
    for k in range(kma):
       for j in range(jma):
 
-        R[0,0] = uuin[k,j]
-        R[1,1] = vvin[k,j]
-        R[2,2] = wwin[k,j]
-        R[0,1] = uvin[k,j]
-        R[1,0] = -uvin[k,j]  # negative?
-        R[0,2] = uwin[k,j]
-        R[2,0] = -uwin[k,j] # negative?
-        R[1,2] = vwin[k,j]
-        R[2,1] = -vwin[k,j] # negative?
+        R[0,0] = uuin[j,k]
+        R[1,1] = vvin[j,k]
+        R[2,2] = wwin[j,k]
+        R[0,1] = uvin[j,k]
+        R[1,0] = -uvin[j,k]  # negative?
+        R[0,2] = uwin[j,k]
+        R[2,0] = -uwin[j,k] # negative?
+        R[1,2] = vwin[j,k]
+        R[2,1] = -vwin[j,k] # negative?
 	 
         A[:,:] = 1.0
         A[0,0] = np.sqrt(R[0,0])	 
         A[0,1] = 0.0 	 
         A[0,2] = 0.0
-	      
-        A[1,0] = R[1,0]/(A[0,0]+1e-20)      
+	if A[0,0] > 0.:      
+        	A[1,0] = R[1,0]/(A[0,0]+1e-20)
+	else:
+		A[1,0] = 0.0      
         if A[1,0]**2>R[1,1]:
 		A[1,1]=0.0
 	else:
         	A[1,1] = np.sqrt(R[1,1]-A[1,0]*A[1,0])      
         A[1,2] = 0.0
-      
-        A[2,0] = R[2,0]/(A[0,0]+1e-20)      
-        A[2,1] = (R[2,1]-A[1,0]*A[2,0])/(A[1,1]+1e-20)
+        if A[0,0] > 0.0:
+        	A[2,0] = R[2,0]/(A[0,0]+1e-20)
+	else:
+		A[2,0] = 0.0
+	if A[1,1]> 0.0:      
+        	A[2,1] = (R[2,1]-A[1,0]*A[2,0])/(A[1,1]+1e-20)
+	else:
+		A[2,1] = 0.0
 	if R[2,2]<A[2,0]*A[2,0]+A[2,1]*A[2,1]:
 		A[2,2]=0.0
 	else:      
@@ -174,9 +181,9 @@ def adapt2prf(yu,yv,yw,uin,vin,win,uuin,vvin,wwin,uvin,uwin,vwin,jma,kma):
         xv = yv[j,k]
         xw = yw[j,k]
 	
-        yu[j,k] =  A[0,0]*xu + A[0,1]*xv + A[0,2]*xw + uin[k,j]
-        yv[j,k] =  A[1,0]*xu + A[1,1]*xv + A[1,2]*xw + vin[k,j]
-        yw[j,k] =  A[2,0]*xu + A[2,1]*xv + A[2,2]*xw + win[k,j]
+        yu[j,k] =  A[0,0]*xu + A[0,1]*xv + A[0,2]*xw + uin[j,k]
+        yv[j,k] =  A[1,0]*xu + A[1,1]*xv + A[1,2]*xw + vin[j,k]
+        yw[j,k] =  A[2,0]*xu + A[2,1]*xv + A[2,2]*xw + win[j,k]
 
 def adapt2d(yu,yv,yw,uin,uuin,vvin,wwin,uwin,jma,kma,mean_profile,inner_d):
 
@@ -721,16 +728,26 @@ def read_prf(profilefile,res):
 		dWdy[i,j]=np.mean(dWdy[i-1:i+1,j-1:j+1])
 		dWdz[i,j]=np.mean(dWdz[i-1:i+1,j-1:j+1])
 
-   plt.contourf(1,y,z,dUdy,100,'x','y','dudy','PODFS/dudy')
-   plt.contourf(2,y,z,dUdz,100,'x','y','dudz','PODFS/dudz')
-   plt.contourf(3,y,z,dVdy,100,'x','y','dvdy','PODFS/dvdy')
-   plt.contourf(4,y,z,dVdz,100,'x','y','dvdz','PODFS/dvdz')
-   plt.contourf(5,y,z,dWdy,100,'x','y','dwdy','PODFS/dwdy')
-   plt.contourf(6,y,z,dWdz,100,'x','y','dwdz','PODFS/dwdz')
-   plt.contourf(7,y,z,U,100,'x','y','U','PODFS/U')
-   plt.contourf(8,y,z,V,100,'x','y','V','PODFS/V')
-   plt.contourf(9,y,z,W,100,'x','y','W','PODFS/W')
-   plt.contourf(10,y,z,eps,100,'x','y','eps','PODFS/eps')
+   plt.contourf(1,y,z,dUdy,100,'x','y','dudy','PODFS/dudy',figsize=(8,8*kma/jma))
+   plt.close(1)
+   plt.contourf(2,y,z,dUdz,100,'x','y','dudz','PODFS/dudz',figsize=(8,8*kma/jma))
+   plt.close(2)
+   plt.contourf(3,y,z,dVdy,100,'x','y','dvdy','PODFS/dvdy',figsize=(8,8*kma/jma))
+   plt.close(3)
+   plt.contourf(4,y,z,dVdz,100,'x','y','dvdz','PODFS/dvdz',figsize=(8,8*kma/jma))
+   plt.close(4)
+   plt.contourf(5,y,z,dWdy,100,'x','y','dwdy','PODFS/dwdy',figsize=(8,8*kma/jma))
+   plt.close(5)
+   plt.contourf(6,y,z,dWdz,100,'x','y','dwdz','PODFS/dwdz',figsize=(8,8*kma/jma))
+   plt.close(6)
+   plt.contourf(7,y,z,U,100,'x','y','U','PODFS/U',figsize=(8,8*kma/jma))
+   plt.close(7)
+   plt.contourf(8,y,z,V,100,'x','y','V','PODFS/V',figsize=(8,8*kma/jma))
+   plt.close(8)
+   plt.contourf(9,y,z,W,100,'x','y','W','PODFS/W',figsize=(8,8*kma/jma))
+   plt.close(9)
+   plt.contourf(10,y,z,eps,100,'x','y','eps','PODFS/eps',figsize=(8,8*kma/jma))
+   plt.close(10)
 
    # calculate dudx from incompressibility (only an approximation!)
    dUdx = -dVdy -dWdz
@@ -866,17 +883,33 @@ def read_prf(profilefile,res):
 
    # filter for negative normal stress components
    uu[np.where(uu<0.0)]=0.0
-   vv[np.where(uu<0.0)]=0.0
-   ww[np.where(uu<0.0)]=0.0
+   vv[np.where(vv<0.0)]=0.0
+   ww[np.where(ww<0.0)]=0.0
 
-   plt.contourf(11,y,z,uu,100,'x','y','uu','PODFS/uu')
-   plt.contourf(12,y,z,vv,100,'x','y','vv','PODFS/vv')
-   plt.contourf(13,y,z,ww,100,'x','y','ww','PODFS/ww')
-   plt.contourf(14,y,z,uv,100,'x','y','uv','PODFS/uv')
-   plt.contourf(15,y,z,uw,100,'x','y','uw','PODFS/uw')
-   plt.contourf(16,y,z,vw,100,'x','y','vw','PODFS/vw')
+   plt.contourf(11,y,z,uu,100,'x','y','uu','PODFS/uu',figsize=(8,8*kma/jma))
+   plt.close(11)
+   plt.contourf(12,y,z,vv,100,'x','y','vv','PODFS/vv',figsize=(8,8*kma/jma))
+   plt.close(12)
+   plt.contourf(13,y,z,ww,100,'x','y','ww','PODFS/ww',figsize=(8,8*kma/jma))
+   plt.close(13)
+   plt.contourf(14,y,z,uv,100,'x','y','uv','PODFS/uv',figsize=(8,8*kma/jma))
+   plt.close(14)
+   plt.contourf(15,y,z,uw,100,'x','y','uw','PODFS/uw',figsize=(8,8*kma/jma))
+   plt.close(15)
+   plt.contourf(16,y,z,vw,100,'x','y','vw','PODFS/vw',figsize=(8,8*kma/jma))
+   plt.close(16)
 
-   return U,V,W,uu,vv,ww,uv,uw,vw,lnx,kma,jma
+   U=np.flip(U,0)
+   V=np.flip(V,0)
+   W=np.flip(W,0)
+   uu=np.flip(uu,0)
+   vv=np.flip(vv,0)
+   ww=np.flip(ww,0)
+   uv=np.flip(uv,0)
+   uw=np.flip(uw,0)
+   vw=np.flip(vw,0)
+
+   return U.T,V.T,W.T,uu.T,vv.T,ww.T,uv.T,uw.T,vw.T,lnx,kma,jma
 
 
 def build_profile(mean_profile,turb_profile,bulk_velocity,turbulence_intensity,kma):

@@ -81,7 +81,8 @@ def sbar(fig,x,y,x_axis,y_axis,filename): #stacked bar
     if (filename != ' '):
         plt.savefig(filename+'.png', bbox_inches='tight')
 
-def contourf(fig,x,y,z,levels,x_axis,y_axis,c_bar,filename):
+def contourf(fig,x,y,z,levels,x_axis,y_axis,c_bar,filename,figsize=(8,6)):
+
 
     #plt.rc('text', usetex=True)
     #plt.rc('font', family='serif')
@@ -90,14 +91,16 @@ def contourf(fig,x,y,z,levels,x_axis,y_axis,c_bar,filename):
         'weight' : 'bold',
         'size'   : 22}
 
-    plt.figure(fig)
-    f=plt.contourf(x, y, z,levels)
+    plt.figure(fig,figsize=figsize)
+    f=plt.contourf(x, y, z,levels,cmap=plt.get_cmap('jet'))
     plt.xlabel(x_axis)
     plt.ylabel(y_axis)
     cbar=plt.colorbar(f)
     cbar.ax.set_ylabel('$'+c_bar+'$')
+    plt.axes().set_aspect('equal','datalim')
+    #f.tight_layout()
     if (filename != ' '):
-        plt.savefig(filename+'.png', bbox_inches='tight')
+        plt.savefig(filename+'.png', bbox_inches='tight',dpi=200)
 
 def contourfquiver(fig,x,y,z,u,v,levels,x_axis,y_axis,c_bar,filename):
 
