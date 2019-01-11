@@ -106,9 +106,9 @@ def adapt1d(yu,yv,yw,uin,uuin,vvin,wwin,uwin,jma,kma):
       R[0,0] = uuin[k]
       R[1,1] = vvin[k]
       R[2,2] = wwin[k]
-      R[0,2] = uwin[k]
-      R[2,0] = -uwin[k] 
-	 
+      #R[0,2] = uwin[k]
+      R[2,0] = uwin[k] # changed from negative (doesn't matter) 
+      
       A[:,:] = 1.0
       A[0,0] = np.sqrt(R[0,0])	 
       A[0,1] = 0.0 	 
@@ -145,11 +145,11 @@ def adapt2prf(yu,yv,yw,uin,vin,win,uuin,vvin,wwin,uvin,uwin,vwin,jma,kma):
         R[1,1] = vvin[j,k]
         R[2,2] = wwin[j,k]
         R[0,1] = uvin[j,k]
-        R[1,0] = -uvin[j,k]  # negative?
+        R[1,0] = uvin[j,k]  # negative?
         R[0,2] = uwin[j,k]
-        R[2,0] = -uwin[j,k] # negative?
+        R[2,0] = uwin[j,k] # negative?
         R[1,2] = vwin[j,k]
-        R[2,1] = -vwin[j,k] # negative?
+        R[2,1] = vwin[j,k] # negative?
 	 
         A[:,:] = 1.0
         A[0,0] = np.sqrt(R[0,0])	 
@@ -228,7 +228,7 @@ def adapt2d(yu,yv,yw,uin,uuin,vvin,wwin,uwin,jma,kma,mean_profile,inner_d):
       	R[1,1] = np.sqrt(vvin[k]*vvinj[j])#/2.
       	R[2,2] = np.sqrt(wwin[k]*wwinj[j])#/2.
       	R[0,2] = np.sign(uwin[k]+uwinj[j])*np.sqrt(abs(uwin[k]*uwinj[j]))#/2.
-      	R[2,0] = -np.sign(uwin[k]+uwinj[j])*np.sqrt(abs(uwin[k]*uwinj[j]))#/2.
+      	R[2,0] = np.sign(uwin[k]+uwinj[j])*np.sqrt(abs(uwin[k]*uwinj[j]))#/2. #changed from minus
 
       	A[:,:] = 1.0
 	temp1 = R[0,0]
@@ -315,7 +315,7 @@ def adapt2d(yu,yv,yw,uin,uuin,vvin,wwin,uwin,jma,kma,mean_profile,inner_d):
         R[1,1] = vvinr
         R[2,2] = wwinr
         R[0,2] = uwinr
-        R[2,0] = -uwinr
+        R[2,0] = uwinr #changed from minus
 
         A[:,:] = 1.0
         temp1 = R[0,0]
@@ -407,7 +407,7 @@ def adapt2d(yu,yv,yw,uin,uuin,vvin,wwin,uwin,jma,kma,mean_profile,inner_d):
         R[1,1] = vvinr
         R[2,2] = wwinr
         R[0,2] = uwinr
-        R[2,0] = -uwinr
+        R[2,0] = uwinr #changed from minus
 
         A[:,:] = 1.0
         temp1 = R[0,0]
@@ -476,7 +476,7 @@ def read_profile(profilefile,kma):
    
    return U,uu,vv,ww,uw
 
-def read_prf(profilefile,res):
+def read_prf(profilefile,res,mdot,den,bulk_velocity,non_dim):
 
    f = open(profilefile,'r')
    not_data = True
@@ -632,6 +632,8 @@ def read_prf(profilefile,res):
    kma = int(math.ceil(zspan/res))
    jma = int(math.ceil(yspan/res))
 
+   print 'jma = ', jma ,' and kma = ', kma
+
    #tri = spatial.Delaunay(points.T)
 
    yarray = np.zeros(np.size(points[1,:]),dtype=np.float64)    
@@ -692,15 +694,65 @@ def read_prf(profilefile,res):
            eps = 0.09*k*sdr
 	   eps[np.where(eps>100000000)]=0
 
+   # scale variables if mass flow rate is different.
+   if mdot !=0.0:
+	# calc old mdot
+	c_area = res**2
+	A = c_area*(kma-1)*(jma-1)
+	meanu = np.mean(U)
+	meanv = np.mean(V)
+	meanw = np.mean(W)
+	udotn = meanu*xn+meanv*yn+meanw*zn
+	mdot_old = udotn*A*den
+	# find TI
+        flag = (eps)>0 # flag to avoid 0 values from biasing average
+	TI = np.sqrt(2./3.*k[flag])/np.sqrt(U[flag]**2+V[flag]**2+W[flag]**2)
+	#find length scales
+   	L = k[flag]**(3/2)/eps[flag]
+	# find new velocities
+	scale = mdot/mdot_old
+	U=U*scale
+	V=V*scale
+	W=W*scale
+	# find new k
+	k[flag] = TI**2*(U[flag]**2+W[flag]**2+V[flag]**2)
+	# find new epsilon
+	eps[flag] = k[flag]**(3/2)/L
+	print 'new maximum velocity is: ', np.amax(U),np.amax(V),np.amax(W)
+
+   elif bulk_velocity != 1.0:
+        meanu = np.mean(U)
+        meanv = np.mean(V)
+        meanw = np.mean(W)
+        udotn = meanu*xn+meanv*yn+meanw*zn
+        # find TI
+        flag = (eps)>0 # flag to avoid 0 values from biasing average
+        TI = np.sqrt(2./3.*k[flag])/np.sqrt(U[flag]**2+V[flag]**2+W[flag]**2)
+        #find length scales
+        L = k[flag]**(3/2)/eps[flag]
+        # find new velocities
+        scale = bulk_velocity/udotn
+        U=U*scale
+        V=V*scale
+        W=W*scale
+        # find new k
+        k[flag] = TI**2*(U[flag]**2+W[flag]**2+V[flag]**2)
+        # find new epsilon
+        eps[flag] = k[flag]**(3/2)/L
+
+
    # calculate mean velocity gradients
    #dU = interpolate.CloughTocher2DInterpolator(points[1:,:].T,UArray,tol=1e-6)
    #dudy= dU(y,z)
 
    flag = np.where(eps==0.0)
+   flag1 = np.where(U==0.0)
    U[flag] = 0
    V[flag] = 0
    W[flag] = 0
-   
+   k[flag] = 0
+   eps[flag1]=0   
+
    dU = np.gradient(U,res)
    dV = np.gradient(V,res)
    dW = np.gradient(W,res)
@@ -711,6 +763,13 @@ def read_prf(profilefile,res):
    dVdz=dV[1]
    dWdy=dW[0]
    dWdz=dW[1]
+
+   dUdy[flag]=0
+   dUdz[flag]=0
+   dVdy[flag]=0
+   dVdz[flag]=0
+   dWdy[flag]=0
+   dWdz[flag]=0
 
    # smooth gradients (may not be necessary)
    dUdy1=dUdy.copy()
@@ -727,6 +786,10 @@ def read_prf(profilefile,res):
 		dVdz[i,j]=np.mean(dVdz[i-1:i+1,j-1:j+1])
 		dWdy[i,j]=np.mean(dWdy[i-1:i+1,j-1:j+1])
 		dWdz[i,j]=np.mean(dWdz[i-1:i+1,j-1:j+1])
+
+   if non_dim:
+	y=y/np.amax(z)
+	z=z/np.amax(z)
 
    plt.contourf(1,y,z,dUdy,100,'x','y','dudy','PODFS/dudy',figsize=(8,8*kma/jma))
    plt.close(1)
@@ -747,6 +810,8 @@ def read_prf(profilefile,res):
    plt.contourf(9,y,z,W,100,'x','y','W','PODFS/W',figsize=(8,8*kma/jma))
    plt.close(9)
    plt.contourf(10,y,z,eps,100,'x','y','eps','PODFS/eps',figsize=(8,8*kma/jma))
+   plt.close(10)
+   plt.contourf(10,y,z,k,100,'x','y','k','PODFS/k',figsize=(8,8*kma/jma))
    plt.close(10)
 
    # calculate dudx from incompressibility (only an approximation!)
@@ -909,7 +974,8 @@ def read_prf(profilefile,res):
    uw=np.flip(uw,0)
    vw=np.flip(vw,0)
 
-   return U.T,V.T,W.T,uu.T,vv.T,ww.T,uv.T,uw.T,vw.T,lnx,kma,jma
+   return U.T,V.T,W.T,uu.T,vv.T,ww.T,uv.T,uw.T,vw.T,lnx \
+		,kma,jma,xn,yn,zn,xc,yc,zc
 
 
 def build_profile(mean_profile,turb_profile,bulk_velocity,turbulence_intensity,kma):
@@ -958,7 +1024,10 @@ def main():
 			 help="What kind of turbulence flow profile would you like? Options: top-hat, none", metavar="STRING")
 
    parser.add_option("--U0","--bulk_velocity", type="float",dest="bulk_velocity", default=1.0,
-			 help="What is the bulk velocity magnitude?", metavar="NUM")
+			 help="What is the bulk velocity magnitude?, this \
+			option can also be used to scale the velocities \
+			and turbulent quantities similar to the massflow \
+			option is using a .prf profile.", metavar="NUM")
 
    parser.add_option("--u_dash", type="float",dest="turbulence_intensity", default='0.02',
 			 help="What is the desired u'/U0 value with u'=v'=w'?", metavar="NUM")
@@ -990,6 +1059,8 @@ def main():
    parser.add_option("-v", "--verbose", dest="verbose",default=False,
 			 help="Save the mean flow, POD spatial and temporal modes?",action='store_true')
    
+   parser.add_option("--non_dim", dest="non_dim",default=False,
+			 help="Non-dimensionalise lengths if using .prf",action='store_true')
 
    parser.add_option("-r", "--resolution", type="float", dest="res",default=0.1,
 			 help="plane resolution in meters per grid point", metavar="NUM")
@@ -1020,6 +1091,18 @@ def main():
                          help="inner diameter of ring as a proportion of the outer \
 			diameter if using the ring-hyperbolic-tangent option", metavar="NUM")
 
+   parser.add_option("--massflow", type="float", dest="mdot",default=0.0,
+                         help="If using a .prf file, the velocities can be  \
+			scaled to achieve the desired mass flow rate. Mean \
+			velocities are scaled equally. k and epsilon/sdr \
+			are scaled to maintain the same turbulence intensity \
+			and length scale. Requires density!", metavar="NUM")
+
+   parser.add_option("--density", type="float", dest="den",default=0.0,
+                         help="If massflow is specified, a density must  \
+                        also be specified.", metavar="NUM")
+
+
 
    if len(sys.argv) == 1:
 	       parser.parse_args(['--help'])
@@ -1027,6 +1110,10 @@ def main():
    (options, args) = parser.parse_args()
 
    profilefile = options.profilefile   
+
+   if not os.path.exists('PODFS'):
+       os.mkdir('PODFS')
+   V=W=0
  
    # if profilefile == none then build profile from options...
    if profilefile == 'none':
@@ -1045,6 +1132,9 @@ def main():
    kma = options.kma
    jma = options.jma
 
+   mdot = options.mdot
+   den = options.den
+
    res = options.res   
    dt = options.dt
 
@@ -1059,10 +1149,25 @@ def main():
    nfx = nf
    nfy = nf
    nfz = nf
-   
+  
+   nx1 = options.nx
+   ny1 = options.ny
+   nz1 = options.nz
+   #normalise
+   nx = nx1/np.sqrt(nx1**2+ny1**2+nz1**2)
+   ny = ny1/np.sqrt(nx1**2+ny1**2+nz1**2)
+   nz = nz1/np.sqrt(nx1**2+ny1**2+nz1**2)
+
+   ox = options.ox
+   oy = options.oy
+   oz = options.oz
+ 
    if (options.profilefile and os.path.isfile(profilefile)):
         if profilefile.endswith('.prf'): # precise 2D profile file
-                U,V,W,uu,vv,ww,uv,uw,vw,lnx,kma,jma = read_prf(profilefile,res)
+                U,V,W,uu,vv,ww,uv,uw,vw,lnx,kma,jma \
+		,nx,ny,nz,ox,oy,oz = \
+		read_prf(profilefile,res,mdot,den,options.bulk_velocity \
+			,options.non_dim)
 		lny=lnz=lnx
         else:
                 U,uu,vv,ww,uw = read_profile(profilefile,kma)
@@ -1070,10 +1175,12 @@ def main():
        #exit()
        U,uu,vv,ww,uw = build_profile(mean_profile,turb_profile,bulk_velocity,turbulence_intensity,kma)
    if dt == 0.: #calculate dt from res and U
-           dt = res/np.mean(U)
+	   flag = np.where(U**2+V**2+W**2!=0)
+           dt = res/np.mean(U[flag])
            print 'timestep set to: ', dt , ' seconds'
    else: #rescale lnx and nfx
-           dt1 = res/np.mean(U)
+	   flag = np.where(U**2+V**2+W**2!=0)
+           dt1 = res/np.mean(U[flag])
            factor = dt1/dt
            lnx = factor*lnx
            nfx = int(math.ceil(float(options.fwidth)*lnx))
@@ -1092,18 +1199,6 @@ def main():
    nm = options.nm
    et = options.et
    verbose = options.verbose
-   
-   nx1 = options.nx
-   ny1 = options.ny
-   nz1 = options.nz
-   #normalise
-   nx = nx1/np.sqrt(nx1**2+ny1**2+nz1**2)
-   ny = ny1/np.sqrt(nx1**2+ny1**2+nz1**2)
-   nz = nz1/np.sqrt(nx1**2+ny1**2+nz1**2)
-   
-   ox = options.ox
-   oy = options.oy
-   oz = options.oz
    
    #number of different filters (normally 1)
    na = 1 
