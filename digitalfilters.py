@@ -21,7 +21,7 @@ import nplotlib as plt
 
 
 PROG = 'DigitalFilters'
-VERSION = '0.9.0'
+VERSION = '1.0.0'
 
 Pi = 3.1415927
 
