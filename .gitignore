@@ -1,5 +1,11 @@
-# Byte-compiled / optimized / DLL files
+# byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 
+# linux files 
+*.swp
+
+# other
+run.sh
+PODFS/
