@@ -1004,6 +1004,75 @@ def build_profile(mean_profile,turb_profile,bulk_velocity,turbulence_intensity,k
 
    return U,uu,vv,ww,uw
 
+def prof_rotation_matrix(nx,ny,nz):
+
+   # a.soli
+   # We are looking for the rotation matrix R: [1,0,0] --R-> [nx,ny,nz] 
+   # We split the rotation into an azimuthal and a polar rotation
+   # https://en.wikipedia.org/wiki/Spherical_coordinate_system
+
+   # L2 norm of versor (it will be 1...remove?)
+   n = np.sqrt(nx**2+ny**2+nz**2)
+    
+   # L2 norm of vector projection of z=0 plane
+   n_proj = np.sqrt(nx**2+ny**2)    
+    
+   # Azimuth angle (it's atan2 function, if statement can be avoided)
+   if (ny > 0):
+       azimuth = np.arccos(nx/n_proj) 
+   elif (ny < 0):
+       azimuth = -np.arccos(nx/n_proj)
+   elif (ny == 0 and nx >= 0):
+       azimuth = 0.
+   elif (ny == 0 and nx < 0):
+       azimuth = np.pi      
+  
+   # Azimuthal rotation matrix
+   c = np.cos(azimuth)
+   s = np.sin(azimuth)
+   Ra = np.array([[c,-s,0],[s,c,0],[0,0,1]])
+   #print "azimuth", azimuth*180/np.pi
+   #print "Ra"
+   #print Ra
+
+   # Polar angle (it's acos*sign(nz) function, if can be avoided)
+   if (nz > 0):
+       polar = np.arccos(n_proj/n) 
+   elif (nz < 0):
+       polar = -np.arccos(n_proj/n)
+   else:
+       polar = 0.
+
+   # Polar rotation matrix
+   c = np.cos(polar)
+   s = np.sin(polar)
+   Rp = np.array([[c,0,-s],[0,1,0],[s,0,c]])
+   #print "polar", polar*180/np.pi
+   #print "Rp"
+   #print Rp
+
+   # Overall rotation matrix
+   R = Ra.dot(Rp)
+   #print "R"
+   #print R
+    
+   return R
+
+
+def rotate_velocity(A,nx,ny,nz):
+
+   pts = len(A)/3   
+   A_rotated = np.zeros(len(A))
+   R =  prof_rotation_matrix(nx,ny,nz)
+
+   for i in range(pts):
+      V = np.array([A[i],A[i+pts],A[i+2*pts]])
+      V_rotated = R.dot(V)
+      # print V, V_rotated
+      A_rotated[i],A_rotated[i+pts],A_rotated[i+2*pts] = V_rotated[0],V_rotated[1],V_rotated[2]
+
+   return A_rotated
+
 
 def main():
    description = """ LES Inflow Generator after Klein et.al. """
@@ -1300,7 +1369,11 @@ def main():
      A[0:jma*kma,i] = yu.reshape(jma*kma)
      A[jma*kma:2*jma*kma,i] = yv.reshape(jma*kma)
      A[2*jma*kma:3*jma*kma,i] = yw.reshape(jma*kma)
-   
+
+     # rotate new velocity field if profile was built and not read 
+     if profilefile == 'none':
+         A[:,i] = rotate_velocity(A[:,i],nx,ny,nz)
+ 
      if verbose: # write fields!
          i_d.time = i*dt
          pod.save_plane(A[:,i],i_d)
