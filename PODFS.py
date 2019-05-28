@@ -1522,6 +1522,7 @@ def read_temporal_modes_dir(num_valid_modes,num_snapshots,dt,temporal_modes,dire
 #=======================================================================
 def fourier_coefficients(i_d):
 
+ hdf5 = i_d.hdf5
  num_snapshots = i_d.ns
  dt = i_d.dt
  stride = 1
