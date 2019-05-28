@@ -18,7 +18,7 @@ from io import BytesIO
 import PODFS as pod
 import math
 import nplotlib as plt
-
+import HDF5 
 
 PROG = 'DigitalFilters'
 VERSION = '1.1.0'
@@ -1171,7 +1171,9 @@ def main():
                          help="If massflow is specified, a density must  \
                         also be specified.", metavar="NUM")
 
-
+   parser.add_option("-5", "--hdf5", dest="hdf5",default=False,
+                         help="Save the PODFS control file, mean and mode \
+			files as a single hdf5 file?",action='store_true')
 
    if len(sys.argv) == 1:
 	       parser.parse_args(['--help'])
@@ -1194,6 +1196,8 @@ def main():
 	mean_profile = options.mean_profile 	
 
    nsteps = options.nsteps  
+
+   hdf5 = options.hdf5
 
    #kma = 11
    #jma = 10 #For generating 2D inflow data set nfy=0 and jma=1
@@ -1324,6 +1328,7 @@ def main():
    i_d.is_POD_var_vec = False
    grid = pod.make_inflow_plane(i_d)
    i_d.grid=grid
+   i_d.hdf5 = hdf5
 
    A = np.zeros((jma*kma*3,nsteps),dtype=np.float64)
  
@@ -1403,6 +1408,8 @@ def main():
    # Save spatial modes as prfs
    pod.pod2prf(i_d)
 
+   if hdf5: # save as HDF5 file
+	HDF5.write_HDF5(i_d)
 
 if __name__ == '__main__':
   main()
