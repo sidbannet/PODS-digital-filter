@@ -851,7 +851,7 @@ def save_Planes(extract,i_d,time,POD_plane_vel,POD_plane_areas,snap):
                                           		POD_plane_vel[j,cc*i_d.plane_cells:(cc+1)*i_d.plane_cells,snap] = u_temp_cell*bool_ar
                                           		cc+=1
 #=======================================================================
-def save_plane(u,i_d):
+def save_plane(u,i_d,i):
         
         cc = vtk.vtkCellCenters()
         cc.SetInputData(i_d.grid)
@@ -861,32 +861,76 @@ def save_plane(u,i_d):
         npt = cc.GetOutput().GetNumberOfPoints()
 
         #print np.shape(u_temp_read),np.shape(points)
-        timestring = "%.5E" % i_d.time
+#        timestring = "%.5E" % i_d.time
+#        
+#        filename = './PODFS/'+timestring+'.prf'      
+#        
+#        target = open(filename,'w')
+#
+#        target.write('# Generated using the digital filter method # name of the profile\n')
+#        target.write('# turbulence model, ' + 'none\n')
+#        plane_rhs = (i_d.t_o[0])*i_d.n[0]+(i_d.t_o[1])*i_d.n[1]+(i_d.t_o[2])*i_d.n[2]
+#        target.write('# plane normal and translation ' + str(i_d.n[0])+'\t'+str(i_d.n[1])+'\t'+str(i_d.n[2])+'\t'+str(plane_rhs)+'\n')
+#        #target.write(str(src_output.GetNumberOfPoints())+'\n')
+#                                
+#        target.write('# type, xyz # type of profile (rad or xyz)\n')
+#        target.write('# localcs,origin,0,0,0 # origin of local coordinate system\n')
+#        target.write('# localcs,xaxis,1,0,0 # x axis direction of local coordinate system\n')
+#        target.write('# localcs,yaxis,0,1,0 # y axis direction of local coordinate system\n')
+#        target.write('# localcs,zaxis,0,0,1 # z axis direction of local coordinate system\n')
+#        target.write('# tolerance, 1.00E-08 # tolerance\n')
+#        target.write('# scale,1,1,1,1,1,1 # scaling factors\n')
+#        target.write('data,x,y,z,u,v,w\n')
+#        for i in range (0,npt):
+#                target.write(sp.str(points[i,0])+','+sp.str(points[i,1])+','+sp.str(points[i,2])+','+sp.str(u[i])+','+sp.str(u[i+npt])+','+sp.str(u[i+2*npt]) + '\n')
+#                                        
+#        target.close()
         
-        filename = './PODFS/'+timestring+'.prf'
+        
+        # export for cfx
+        u_temp=np.zeros(npt)
+        v_temp=np.zeros(npt)
+        w_temp=np.zeros(npt)
+        
+        for l in range (0,npt):
+            u_temp[l]=u[l]
+            v_temp[l]=u[l+npt]
+            w_temp[l]=u[l+2*npt]
+            
+        Vel_mag=np.sqrt(u_temp**2+v_temp**2+w_temp**2)
+        
+        u_comp=u_temp/Vel_mag
+        v_comp=v_temp/Vel_mag
+        w_comp=w_temp/Vel_mag
+        
+        
+        
+        timestring = "%.5E" % i_d.time
+        timestepnum = str(i+1)
+        
+        filename = './PODFS/'+timestring+'.csv'      
         
         target = open(filename,'w')
 
-        target.write('# Generated using the digital filter method # name of the profile\n')
-        target.write('# turbulence model, ' + 'none\n')
-        plane_rhs = (i_d.t_o[0])*i_d.n[0]+(i_d.t_o[1])*i_d.n[1]+(i_d.t_o[2])*i_d.n[2]
-        target.write('# plane normal and translation ' + str(i_d.n[0])+'\t'+str(i_d.n[1])+'\t'+str(i_d.n[2])+'\t'+str(plane_rhs)+'\n')
-        #target.write(str(src_output.GetNumberOfPoints())+'\n')
-                                
-        target.write('type, xyz # type of profile (rad or xyz)\n')
-        target.write('localcs,origin,0,0,0 # origin of local coordinate system\n')
-        target.write('localcs,xaxis,1,0,0 # x axis direction of local coordinate system\n')
-        target.write('localcs,yaxis,0,1,0 # y axis direction of local coordinate system\n')
-        target.write('localcs,zaxis,0,0,1 # z axis direction of local coordinate system\n')
-        target.write('tolerance, 1.00E-08 # tolerance\n')
-        target.write('scale,1,1,1,1,1,1 # scaling factors\n')
-        target.write('data,x,y,z,u,v,w\n')
+        target.write('[Name]\n')
+        target.write('turbInlet\n')
+        target.write('[Spatial Fields]\n')
+        target.write('x, y, z\n')
+        target.write('[Data]\n')
+        target.write('x [ m ],y [ m ],z [ m ],u [ ],v [ ],w [ ]\n')
         for i in range (0,npt):
-                target.write(sp.str(points[i,0])+','+sp.str(points[i,1])+','+sp.str(points[i,2])+','+sp.str(u[i])+','+sp.str(u[i+npt])+','+sp.str(u[i+2*npt]) + '\n')
+                target.write(sp.str(points[i,0])+','+sp.str(points[i,1])+','+sp.str(points[i,2])+','+sp.str(u_comp[i])+','+sp.str(v_comp[i])+','+sp.str(w_comp[i]) + '\n')
                                         
-        target.close()
+        target.close()       
                                         
-
+        filename = './PODFS/inlet.dat'+timestepnum      
+        
+        target = open(filename,'w')
+        
+        for m in range (0,npt):
+                target.write(sp.str(points[m,0])+' '+sp.str(points[m,1])+' '+sp.str(points[m,2])+' '+sp.str(u_comp[m])+' '+sp.str(v_comp[m])+' '+sp.str(w_comp[m]) + '\n')
+                #target.write(sp.str(points[m,0])+'\t'+sp.str(points[m,1])+'\t'+sp.str(points[m,2])+'\t100000\t300\n')                       
+        target.close() 
 #=======================================================================
 def calc_cell_areas(extract):
 
