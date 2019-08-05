@@ -519,7 +519,7 @@ def read_prf(profilefile,res,mdot,den,bulk_velocity,non_dim):
                    wwdata = i-1
 
 
-   profiledata = np.loadtxt(profilefile,skiprows = data_count)
+   profiledata = np.loadtxt(profilefile,skiprows = data_count, delimiter=',')
    npoints = profiledata.shape[0]
 
    xArray = profiledata[:,xdata]
@@ -1108,6 +1108,17 @@ def main():
 	       parser.parse_args(['--help'])
     
    (options, args) = parser.parse_args()
+   
+#   options.mean_profile='double-hyperbolic-tangent'
+#   options.turbulence_intensity=0.02
+#   options.nsteps=100
+#   options.kma=10
+#   options.jma=10
+#   options.verbose='true'
+#   options.res=0.001
+#   options.ox=0.005
+#   options.oz=0.005
+#   options.bulk_velocity=10
 
    profilefile = options.profilefile   
 
@@ -1303,7 +1314,7 @@ def main():
    
      if verbose: # write fields!
          i_d.time = i*dt
-         pod.save_plane(A[:,i],i_d)
+         pod.save_plane(A[:,i],i_d,i)
 
    # prepare for POD
    if verbose:
@@ -1321,14 +1332,14 @@ def main():
 
 
    # Do POD
-   pod.POD(A,nsteps,num_points,3,'false',[],'PODFS/','false',1.0e-15,nm,nmw,'false','false',grid,mean_field,dt,'velocity',1,nsteps,1,1,i_d)
+#   pod.POD(A,nsteps,num_points,3,'false',[],'PODFS/','false',1.0e-15,nm,nmw,'false','false',grid,mean_field,dt,'velocity',1,nsteps,1,1,i_d)
 
 
    # Compute fourier coefficients
-   pod.fourier_coefficients(i_d)
+#   pod.fourier_coefficients(i_d)
 
    # Save spatial modes as prfs
-   pod.pod2prf(i_d)
+#   pod.pod2prf(i_d)
 
 
 if __name__ == '__main__':
