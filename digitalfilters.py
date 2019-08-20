@@ -185,7 +185,7 @@ def adapt2prf(yu,yv,yw,uin,vin,win,uuin,vvin,wwin,uvin,uwin,vwin,jma,kma):
         yv[j,k] =  A[1,0]*xu + A[1,1]*xv + A[1,2]*xw + vin[j,k]
         yw[j,k] =  A[2,0]*xu + A[2,1]*xv + A[2,2]*xw + win[j,k]
 
-def adapt2d(yu,yv,yw,uin,uuin,vvin,wwin,uwin,jma,kma,mean_profile,inner_d):
+def adapt2d(yu,yv,yw,uin,uuin,vvin,wwin,uwin,jma,kma,mean_profile,inner_d,sector,jk_full):
 
   R = np.zeros((3,3))
   A = np.zeros((3,3))
@@ -348,7 +348,6 @@ def adapt2d(yu,yv,yw,uin,uuin,vvin,wwin,uwin,jma,kma,mean_profile,inner_d):
         yw[j,k] =  A[2,0]*xu + A[2,1]*xv + A[2,2]*xw
 
   elif mean_profile == 'ring-hyperbolic-tangent':
-
     x = np.linspace(-1.,1.,jma)
     y = np.linspace(-1.,1.,kma)
 
@@ -365,6 +364,7 @@ def adapt2d(yu,yv,yw,uin,uuin,vvin,wwin,uwin,jma,kma,mean_profile,inner_d):
       for k in range(kma):
 	
     	r = np.sqrt(x[j]**2+y[k]**2)
+        
         uinr  = interpolate.splev(r, uinj, der=0)
         uuinr = interpolate.splev(r, uuinj, der=0)
         vvinr = interpolate.splev(r, vvinj, der=0)
@@ -402,7 +402,6 @@ def adapt2d(yu,yv,yw,uin,uuin,vvin,wwin,uwin,jma,kma,mean_profile,inner_d):
          wwinr = 0.0
          uwinr = 0.0
 
-
         R[0,0] = uuinr
         R[1,1] = vvinr
         R[2,2] = wwinr
@@ -438,7 +437,105 @@ def adapt2d(yu,yv,yw,uin,uuin,vvin,wwin,uwin,jma,kma,mean_profile,inner_d):
         yu[j,k] =  A[0,0]*xu + A[0,1]*xv + A[0,2]*xw + uinr
         yv[j,k] =  A[1,0]*xu + A[1,1]*xv + A[1,2]*xw
         yw[j,k] =  A[2,0]*xu + A[2,1]*xv + A[2,2]*xw
+
+  elif mean_profile == 'ring-sector-hyperbolic-tangent':
+    jma_full = jk_full[0]
+    kma_full = jk_full[1]
+    x = np.linspace(-1.,1.,jma_full)
+    y = np.linspace(-1.,1.,kma_full)
+
+    # re-interpolate to r
+    zArray = np.linspace(inner_d,1.,kma_full)
+    uinj  = interpolate.splrep(zArray, uin, s=0)
+    uuinj = interpolate.splrep(zArray, uuin, s=0)
+    vvinj = interpolate.splrep(zArray, vvin, s=0)
+    wwinj = interpolate.splrep(zArray, wwin, s=0)
+    uwinj = interpolate.splrep(zArray, uwin, s=0)
+
+    for j in range (jma_full):
+    
+      for k in range(kma_full):
 	
+    	r = np.sqrt(x[j]**2+y[k]**2)
+        
+        uinr  = interpolate.splev(r, uinj, der=0)
+        uuinr = interpolate.splev(r, uuinj, der=0)
+        vvinr = interpolate.splev(r, vvinj, der=0)
+        wwinr = interpolate.splev(r, wwinj, der=0)
+        uwinr = interpolate.splev(r, uwinj, der=0)
+
+	# reset boundaries to avoid dodgy values
+	if r==inner_d:
+	 uinr = uin[0]
+	 uuinr = uuin[0]
+	 vvinr = vvin[0]
+	 wwinr = wwin[0]
+	 uwinr = uwin[0]
+
+        if r==1.0:
+         uinr = uin[-1]
+         uuinr = uuin[-1]
+         vvinr = vvin[-1]
+         wwinr = wwin[-1]
+         uwinr = uwin[-1]
+
+	# if r>0 then set to zero!
+        if r>1.0:
+         uinr = 0.0
+         uuinr = 0.0
+         vvinr = 0.0
+         wwinr = 0.0
+         uwinr = 0.0
+
+	# if r<inner_d then set to zero!
+        if r<inner_d:
+         uinr = 0.0
+         uuinr = 0.0
+         vvinr = 0.0
+         wwinr = 0.0
+         uwinr = 0.0
+
+        R[0,0] = uuinr
+        R[1,1] = vvinr
+        R[2,2] = wwinr
+        R[0,2] = uwinr
+        R[2,0] = uwinr #changed from minus
+
+        A[:,:] = 1.0
+        temp1 = R[0,0]
+        if temp1 <0:
+                temp1 = 0
+        A[0,0] = np.sqrt(R[0,0])
+        A[0,1] = 0.0
+        A[0,2] = 0.0
+
+        A[1,0] = R[1,0]/(A[0,0]+1e-20)
+        temp1 = R[1,1]-A[1,0]*A[1,0]
+        if temp1<0:
+                temp1 = 0.0
+        A[1,1] = np.sqrt(temp1)
+        A[1,2] = 0.0
+
+        A[2,0] = R[2,0]/(A[0,0]+1e-20)
+        A[2,1] = (R[2,1]-A[1,0]*A[2,0])/(A[1,1]+1e-20)
+        temp1 = R[2,2]-A[2,0]*A[2,0]-A[2,1]*A[2,1]
+        if temp1<0:
+                temp1 = 0.0
+        A[2,2] = np.sqrt(temp1)
+
+        # only store data that are in reduced domain
+        # I don't think this is the most efficient way to do it
+        if k>=kma_full - kma and j>=0.5*(jma_full-jma) and j<0.5*(jma_full+jma):
+           knew = k - (kma_full-kma)  
+           jnew = j - int(0.5*(jma_full-jma))
+           xu = yu[jnew,knew]
+           xv = yv[jnew,knew]
+           xw = yw[jnew,knew]
+
+           yu[jnew,knew] =  A[0,0]*xu + A[0,1]*xv + A[0,2]*xw + uinr
+           yv[jnew,knew] =  A[1,0]*xu + A[1,1]*xv + A[1,2]*xw
+           yw[jnew,knew] =  A[2,0]*xu + A[2,1]*xv + A[2,2]*xw
+
 def read_profile(profilefile,kma):
 
    profiledata = np.genfromtxt(profilefile, names=True,autostrip=True, comments='#')
@@ -981,13 +1078,14 @@ def read_prf(profilefile,res,mdot,den,bulk_velocity,non_dim):
 def build_profile(mean_profile,turb_profile,bulk_velocity,turbulence_intensity,kma):
 
    if mean_profile in ['hyperbolic-tangent','double-hyperbolic-tangent', \
-			'circular-hyperbolic-tangent','ring-hyperbolic-tangent']:
+			'circular-hyperbolic-tangent','ring-hyperbolic-tangent', \
+                        'ring-sector-hyperbolic-tangent']:
            
            y = np.linspace(-0.5,0.5,kma)
            U = bulk_velocity/2*(1.+np.tanh(10.*(-np.abs(y)+0.5)))
            #print np.tanh(np.abs(y))
    else:
-	raise Exception('Invalid mean_profile chosen, type \'python digitalfilters.py -h\' for help.')
+	raise Exception("Invalid mean_profile chosen, type 'python digitalfilters.py -h' for help.")
 
    if turb_profile == 'top-hat':
            uu = (turbulence_intensity*U)**2
@@ -1000,7 +1098,7 @@ def build_profile(mean_profile,turb_profile,bulk_velocity,turbulence_intensity,k
            ww = 0.0
            uw = 0.0
    else:
-	raise Exception('Invalid turb_profile chosen, type \'python digitalfilters.py -h\' for help.')
+	raise Exception("Invalid turb_profile chosen, type 'python digitalfilters.py -h' for help.")
 
    return U,uu,vv,ww,uw
 
@@ -1073,6 +1171,52 @@ def rotate_velocity(A,nx,ny,nz):
 
    return A_rotated
 
+def fit_to_sector(jma,kma,sector,inner_d,res,ox,oy,oz):
+
+   print "Resizing for ring sector"
+   print "Original j:", jma
+   print "Original k:", kma
+
+   x = np.linspace(-1.,1.,jma)
+   y = np.linspace(-1.,1.,kma)
+   to_keep = np.ones((jma,kma))  
+ 
+   for j in range (jma):
+      for k in range (kma):
+         r = np.sqrt(x[j]**2+y[k]**2)   
+         theta = np.arctan2(-y[k],-x[j])*180.0/np.pi 
+         
+         # we flag elements out of ring to be discarded
+         if r>1. or r<inner_d:
+            to_keep[j,k] = 0.         
+
+         # we flag elements out of sector to be discarded
+         if theta>sector*0.5 or theta<-sector*0.5:
+            to_keep[j,k] = 0.
+
+   #import sys
+   #np.set_printoptions(threshold=sys.maxsize)
+   #print to_keep
+   
+   # finds rows and colums to be discarded
+   colsum = np.sum(to_keep,axis=0)
+   rowsum = np.sum(to_keep,axis=1)
+    
+   # new domain size
+   jmanew = np.count_nonzero(colsum) + 2
+   jma = jmanew
+   kmanew = np.count_nonzero(rowsum) + 2 
+   delk = kma-kmanew
+   kma = kmanew
+
+   print "New j:", jma
+   print "New k:", kma
+
+   # we now need to find centre of new plane
+   # ox, oy stay the same
+   oz = oz + delk*res/2 
+
+   return kma,jma,ox,oy,oz   
 
 def main():
    description = """ LES Inflow Generator after Klein et.al. """
@@ -1087,7 +1231,7 @@ def main():
 			 help="1d turbulent profile file", metavar="FILE")
 
    parser.add_option("-p", "--mean_profile", dest="mean_profile", default='hyperbolic-tangent',
-			 help="What kind of mean flow profile would you like? Options: hyperbolic-tangent, double-hyperbolic-tangent, ring-hyperbolic-tangent, circular-hyperbolic-tangent. Using the -i option along with this will adapt the -i profile to the shape of the -p profile ie. plane jet, square jet, round jet, annulus jet.", metavar="STRING")
+			 help="What kind of mean flow profile would you like? Options: hyperbolic-tangent, double-hyperbolic-tangent, ring-hyperbolic-tangent, circular-hyperbolic-tangent, ring-sector-hyperbolic-tangent. Using the -i option along with this will adapt the -i profile to the shape of the -p profile ie. plane jet, square jet, round jet, annulus jet.", metavar="STRING")
    
    parser.add_option("--turb_profile", dest="turb_profile", default='top-hat',
 			 help="What kind of turbulence flow profile would you like? Options: top-hat, none", metavar="STRING")
@@ -1160,6 +1304,13 @@ def main():
                          help="inner diameter of ring as a proportion of the outer \
 			diameter if using the ring-hyperbolic-tangent option", metavar="NUM")
 
+   parser.add_option("--sector", type="float", dest="sector",default=0.0,
+                         help="circumferential extent (in degrees) of the annulus\
+                        sector. It works with the \'ring-hyperbolic-tangent\' profile.", metavar="NUM")
+
+   parser.add_option("--fitgrid", dest="fitgrid", default='sector',
+			 help="fits the grid and refines gridsize for sector cases. Options: full-ring, sector", metavar="STRING")
+
    parser.add_option("--massflow", type="float", dest="mdot",default=0.0,
                          help="If using a .prf file, the velocities can be  \
 			scaled to achieve the desired mass flow rate. Mean \
@@ -1208,6 +1359,8 @@ def main():
    dt = options.dt
 
    inner_d = options.ring
+   sector = options.sector
+   fitgrid = options.fitgrid
 
    lnx = options.lengthscale 
    lny = lnx
@@ -1255,7 +1408,11 @@ def main():
            nfx = int(math.ceil(float(options.fwidth)*lnx))
            print 'Lengthscale in x-direction set to: ' , lnx , 'grid points'
            print 'Filter width in x-direction set to: ' , nfx , 'grid points'
-     
+   
+   # a.soli Aug19: ring sector
+   jk_full = [kma,jma]  # I need to store kma and jma of full ring
+   if mean_profile=="ring-sector-hyperbolic-tangent":
+      kma,jma,ox,oy,oz = fit_to_sector(kma,jma,sector,inner_d,res,ox,oy,oz) # new kma and jma and centre of sector 
 
 
    #half filter length nf? should be greater than 2 ln?
@@ -1343,8 +1500,9 @@ def main():
      if profilefile.endswith('.prf'):
  	adapt2prf(yu,yv,yw,U,V,W,uu,vv,ww,uv,uw,vw,jma,kma)
      elif mean_profile in ['double-hyperbolic-tangent', \
-	'ring-hyperbolic-tangent','circular-hyperbolic-tangent']:
-     	adapt2d(yu,yv,yw,U,uu,vv,ww,uw,jma,kma,mean_profile,inner_d)
+	'ring-hyperbolic-tangent','circular-hyperbolic-tangent',\
+        'ring-sector-hyperbolic-tangent']:
+     	adapt2d(yu,yv,yw,U,uu,vv,ww,uw,jma,kma,mean_profile,inner_d,sector,jk_full)
      else:	
 	adapt1d(yu,yv,yw,U,uu,vv,ww,uw,jma,kma)
      
