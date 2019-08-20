@@ -1304,7 +1304,7 @@ def main():
                          help="inner diameter of ring as a proportion of the outer \
 			diameter if using the ring-hyperbolic-tangent option", metavar="NUM")
 
-   parser.add_option("--sector", type="float", dest="sector",default=0.0,
+   parser.add_option("--sector", type="float", dest="sector",default=360.0,
                          help="circumferential extent (in degrees) of the annulus\
                         sector. It works with the \'ring-hyperbolic-tangent\' profile.", metavar="NUM")
 
