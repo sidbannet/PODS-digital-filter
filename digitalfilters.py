@@ -1308,9 +1308,6 @@ def main():
                          help="circumferential extent (in degrees) of the annulus\
                         sector. It works with the \'ring-hyperbolic-tangent\' profile.", metavar="NUM")
 
-   parser.add_option("--fitgrid", dest="fitgrid", default='sector',
-			 help="fits the grid and refines gridsize for sector cases. Options: full-ring, sector", metavar="STRING")
-
    parser.add_option("--massflow", type="float", dest="mdot",default=0.0,
                          help="If using a .prf file, the velocities can be  \
 			scaled to achieve the desired mass flow rate. Mean \
@@ -1360,7 +1357,6 @@ def main():
 
    inner_d = options.ring
    sector = options.sector
-   fitgrid = options.fitgrid
 
    lnx = options.lengthscale 
    lny = lnx
