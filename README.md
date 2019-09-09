@@ -36,7 +36,7 @@ You can run the code by typing:
 python digitalfilters.py
 ```
 
-To display the help menu
+to display the help menu.
 
 ## Running the tests
 
@@ -47,7 +47,7 @@ Currently there are no official tests for the code but a minimum working example
 python digitalfilters.py -n 5
 ```
 
-Which will create 5 snapshots of a turbulent flow field and generate the PODFS model of it. You can view the resultin mean field using ParaView which is generated in:
+which will create 5 snapshots of a turbulent flow field and generate the PODFS model of it. You can view the resulting mean field using ParaView which is generated in:
 
 
 ```
@@ -67,7 +67,13 @@ Create a pull request when you have a working feature so we can integrate it int
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://bitbucket.org/digital_filters_podfs/digital_filters_podfs/downloads/?tab=tags). 
+
+* Version 1.1.0 - For cases that use assumed velocity profile, the mean velocity can now be rotated along with the plane.
+
+* Version 1.0.0 - Initial release.
+
+* Version 0.9.0 - Pre-release version.
 
 ## Authors
 
