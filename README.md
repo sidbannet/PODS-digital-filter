@@ -4,7 +4,7 @@ This repository contains the PODFS/digital-filter code used to generate turbulen
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
 
 ### Prerequisites
 
@@ -51,9 +51,14 @@ which will create 5 snapshots of a turbulent flow field and generate the PODFS m
 
 
 ```
-PODFS/PODFS_mean.prf
+PODFS/spatial_mean_field_velocity.vtk
 ```
 
+The program writes out the following ASCII files:
+
+* PODFS_mean.prf - The mean field with columns X,Y,Z,U,V,W
+* PODFS_mode_????.prf - The POD modes wih columns X,Y,Z,u,v,w
+* PODFS.dat - The PODFS control file which includes 1. The number of POD modes. 2. The PODFS period. 3. The number of Fourier Coefficients for each POD mode. 4. The Fourier Coefficients.
 
 ## Contributing
 
