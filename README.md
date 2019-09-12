@@ -84,9 +84,9 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 **Max Staufer** - *Initial work* - Rolls-Royce Deutschland
 
-**Nicholas Treleaven** - *Initial work* - Loughborough University/Rolls-Royce Deutschland/STFS, TU-Darmstadt
+**Nicholas Treleaven** - *Project Lead* - Loughborough University/Rolls-Royce Deutschland/STFS, TU-Darmstadt
 
-**Alessandro Soli** - *Applications to spray break-up simulations* - Loughborough University
+**Alessandro Soli** - *Applications to Compressor/Combustor coupling* - Loughborough University
 
 For all inquiries, please contact Nick at treleaven@stfs.tu-darmstadt.de
 
