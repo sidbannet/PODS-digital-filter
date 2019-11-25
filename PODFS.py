@@ -928,7 +928,7 @@ def save_plane(u,i_d,i):
         target = open(filename,'w')
         
         for m in range (0,npt):
-                target.write(sp.str(points[m,0])+' '+sp.str(points[m,1])+' '+sp.str(points[m,2])+' '+sp.str(u_comp[m])+' '+sp.str(v_comp[m])+' '+sp.str(w_comp[m]) + '\n')
+                target.write(sp.str(points[m,0])+'\t'+sp.str(points[m,1])+'\t'+sp.str(points[m,2])+'\t'+sp.str(u_comp[m])+'\t'+sp.str(v_comp[m])+'\t'+sp.str(w_comp[m]) + '\t'+sp.str(w_comp[m]) +'\n')
                 #target.write(sp.str(points[m,0])+'\t'+sp.str(points[m,1])+'\t'+sp.str(points[m,2])+'\t100000\t300\n')                       
         target.close() 
 #=======================================================================
