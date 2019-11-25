@@ -978,13 +978,14 @@ def read_prf(profilefile,res,mdot,den,bulk_velocity,non_dim):
 		,kma,jma,xn,yn,zn,xc,yc,zc
 
 
-def build_profile(mean_profile,turb_profile,bulk_velocity,turbulence_intensity,kma):
+def build_profile(mean_profile,turb_profile,bulk_velocity,turbulence_intensity,kma,bulk_temperature,temperature_fluctuations):
 
    if mean_profile in ['hyperbolic-tangent','double-hyperbolic-tangent', \
 			'circular-hyperbolic-tangent','ring-hyperbolic-tangent']:
            
            y = np.linspace(-0.5,0.5,kma)
            U = bulk_velocity/2*(1.+np.tanh(10.*(-np.abs(y)+0.5)))
+           T = bulk_temperature/2*(1.+np.tanh(10.*(-np.abs(y)+0.5)))
            #print np.tanh(np.abs(y))
    else:
 	raise Exception('Invalid mean_profile chosen, type \'python digitalfilters.py -h\' for help.')
@@ -994,15 +995,17 @@ def build_profile(mean_profile,turb_profile,bulk_velocity,turbulence_intensity,k
            vv = (turbulence_intensity*U)**2
            ww = (turbulence_intensity*U)**2
            uw = 0.0*U
+           tt = temperature_fluctuations*T
    elif turb_profile == 'none':
 	   uu = 0.0
            vv = 0.0
            ww = 0.0
            uw = 0.0
+           tt = 0.0
    else:
 	raise Exception('Invalid turb_profile chosen, type \'python digitalfilters.py -h\' for help.')
 
-   return U,uu,vv,ww,uw
+   return U,uu,vv,ww,uw,T,tt
 
 
 def main():
@@ -1104,21 +1107,23 @@ def main():
 
 
 
-   if len(sys.argv) == 1:
-	       parser.parse_args(['--help'])
+#   if len(sys.argv) == 1:
+#	       parser.parse_args(['--help'])
     
    (options, args) = parser.parse_args()
    
-#   options.mean_profile='double-hyperbolic-tangent'
-#   options.turbulence_intensity=0.02
-#   options.nsteps=100
-#   options.kma=10
-#   options.jma=10
-#   options.verbose='true'
-#   options.res=0.001
-#   options.ox=0.005
-#   options.oz=0.005
-#   options.bulk_velocity=10
+   options.mean_profile='double-hyperbolic-tangent'
+   options.turbulence_intensity=0.02
+   options.nsteps=200
+   options.kma=20
+   options.jma=20
+   options.verbose='true'
+   options.res=0.0005
+   options.ox=0.005
+   options.oz=0.005
+   options.bulk_velocity=10
+   options.bulk_temperature=293.15
+   options.temperature_fluctuations=0.02
 
    profilefile = options.profilefile   
 
@@ -1128,12 +1133,14 @@ def main():
  
    # if profilefile == none then build profile from options...
    if profilefile == 'none':
-	mean_profile = options.mean_profile
-	turb_profile = options.turb_profile
-	bulk_velocity = options.bulk_velocity
-	turbulence_intensity = options.turbulence_intensity
+      mean_profile = options.mean_profile
+      turb_profile = options.turb_profile
+      bulk_velocity = options.bulk_velocity
+      turbulence_intensity = options.turbulence_intensity
+      bulk_temperature =  options.bulk_temperature
+      temperature_fluctuations = options.temperature_fluctuations
    else: # allow adoption of profile to different shapped inlets
-	mean_profile = options.mean_profile 	
+      mean_profile = options.mean_profile 	
 
    nsteps = options.nsteps  
 
@@ -1184,7 +1191,7 @@ def main():
                 U,uu,vv,ww,uw = read_profile(profilefile,kma)
    else: # contruct profile
        #exit()
-       U,uu,vv,ww,uw = build_profile(mean_profile,turb_profile,bulk_velocity,turbulence_intensity,kma)
+       U,uu,vv,ww,uw,T,tt = build_profile(mean_profile,turb_profile,bulk_velocity,turbulence_intensity,kma,bulk_temperature,temperature_fluctuations)
    if dt == 0.: #calculate dt from res and U
 	   flag = np.where(U**2+V**2+W**2!=0)
            dt = res/np.mean(U[flag])
@@ -1241,11 +1248,13 @@ def main():
                           size=(nfx*2+1,nfy*2+1+jma,nfz*2+1+kma)) #random fields
    xw = np.random.uniform(low=-pdfr, high=pdfr, 
                           size=(nfx*2+1,nfy*2+1+jma,nfz*2+1+kma)) #random fields
+   xt = np.random.uniform(low=-pdfr, high=pdfr, 
+                          size=(nfx*2+1,nfy*2+1+jma,nfz*2+1+kma)) #random fields
 
    yu = np.zeros((jma,kma))
    yv = np.zeros((jma,kma))
    yw = np.zeros((jma,kma))
-   
+   yt = np.zeros((jma,kma))
    
    #pvar = np.zeros(nsteps)
    
@@ -1280,7 +1289,8 @@ def main():
     
      filter3D(xu,yu,a,jma,kma,nfx,nfy,nfz) 
      filter3D(xv,yv,a,jma,kma,nfx,nfy,nfz)
-     filter3D(xw,yw,a,jma,kma,nfx,nfy,nfz)        
+     filter3D(xw,yw,a,jma,kma,nfx,nfy,nfz) 
+     filter3D(xt,yt,a,jma,kma,nfx,nfy,nfz)
   
      if profilefile.endswith('.prf'):
  	adapt2prf(yu,yv,yw,U,V,W,uu,vv,ww,uv,uw,vw,jma,kma)
