@@ -10,6 +10,7 @@ Welcome to Digital Filter PODFS's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   intro
    usage/quickstart
    usage/options
 
