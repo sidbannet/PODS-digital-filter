@@ -25,19 +25,21 @@ def write_HDF5(i_d):
 	N_FC[:] = i_d.N_FC
 
 	# create dataset of fourier coefficients
-	FC = main.create_dataset("FC",(np.sum(i_d.N_FC),3), dtype='f')
-	FC[:] = i_d.FC
+	FC = main.create_dataset("FC",(np.sum(i_d.N_FC)*3,), dtype=np.float64)
+	FC[:] = i_d.FC.reshape(np.sum(i_d.N_FC)*3,order='F')
 
 	# create dataset of mean field
-	data = main.create_dataset("mean",(i_d.num_points,6), dtype='f')
-	data[:] = i_d.mean
+	data = main.create_dataset("mean",(i_d.num_points*6,), dtype=np.float64)
+	data[:] = i_d.mean.reshape(i_d.num_points*6,order='F')
 
 	# add number of points as attribute
         data.attrs["Np"] = i_d.num_points
         # add number of variables as  attribute
         data.attrs["Nvar"] = 6
-        # add variables as attribute
-        data.attrs["Vars"] = 'x,y,z,u,v,w'
+        # add variables as attribute (needs dummy variable at the end for precise to read!)
+        data.attrs["Vars"] = np.string_('x,y,z,u,v,w,dummy')
+	# add scaling factors as an attribute
+        data.attrs["SF"] = [1.,1.,1.,1.,1.,1.]
 
 	# create "modes" group 
 	modes = main.create_group("modes") 
@@ -47,16 +49,16 @@ def write_HDF5(i_d):
 		
 		counter = '%4.4i'% (i+1)
 		# create dataset
-		data = modes.create_dataset("mode_"+counter,(i_d.num_points,6), dtype='f')
-		data[:] = i_d.modes[i,:,:]
+		data = modes.create_dataset("mode_"+counter,(i_d.num_points*6,), dtype=np.float64)
+		data[:] = i_d.modes[i,:,:].reshape(i_d.num_points*6,order='F')
 
 		# add number of points as attribute
         	data.attrs["Np"] = i_d.num_points
         	# add number of variables as  attribute
         	data.attrs["Nvar"] = 6
-        	# add variables as attribute
-        	data.attrs["Vars"] = 'x,y,z,u,v,w'
-		# add normalisation as an attribute
-        	data.attrs["Norm"] = 'none'
+        	# add variables as attribute (needs dummy variable at end)
+        	data.attrs["Vars"] = np.string_('x,y,z,u,v,w,dummy')
+		# add scaling factors as an attribute
+        	data.attrs["SF"] = [1.,1.,1.,1.,1.,1.]
 
 	f.close()

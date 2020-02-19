@@ -1638,24 +1638,25 @@ def fourier_coefficients(i_d):
 				  c[c_ind[i,j],i].imag]
 		count1 += 1
 
- else:
+ # I've changed this so the text files are always written too
+ # I figure this will be useful for debugging
 
-  print '\n Saving to PODFS.dat ...'
+ print '\n Saving to PODFS.dat ...'
 
-  filename = rdir+'PODFS.dat'
+ filename = rdir+'PODFS.dat'
 
-  target = open(filename,'w')
+ target = open(filename,'w')
 
-  target.write(str(num_modes))
-  target.write('\n'+str(period))
-  for i in range (0,num_modes):
+ target.write(str(num_modes))
+ target.write('\n'+str(period))
+ for i in range (0,num_modes):
 	target.write('\n'+ str(i+1)+'\t'+str(c_count[i]))
 
-  for i in range(0,num_modes):
+ for i in range(0,num_modes):
 	for j in range(0,c_count[i]):
 		target.write('\n'+ str(c_ind[i,j]-num_fcs/2)+'\t'+str(c[c_ind[i,j],i].real)+'\t'+str(c[c_ind[i,j],i].imag))
 
-  target.close()
+ target.close()
 
 #======================================================================
 def pod2prf(i_d):
@@ -1706,43 +1707,42 @@ def pod2prf(i_d):
 	i_d.mean[:,0:3] = points
 	i_d.mean[:,3:] = u
 
- else: # write to .prf file
                                          
-  filename = rdir +'PODFS_mean.prf'
+ filename = rdir +'PODFS_mean.prf'
 
-  target = open(filename,'w')
+ target = open(filename,'w')
 
-  target.write('# ' + 'PODFS_mean # name of the profile\n')
-  target.write('# turbulence model, ' + i_d.turbulence_model+'\n')
-  plane_rhs = (o1+i_d.t_o[0])*n1+(o2+i_d.t_o[1])*n2+(o3+i_d.t_o[2])*n3
-  target.write('# plane normal and translation ' + str(n1)+'\t'+str(n2)+'\t'+str(n3)+'\t'+str(plane_rhs)+'\n')
+ target.write('# ' + 'PODFS_mean # name of the profile\n')
+ target.write('# turbulence model, ' + i_d.turbulence_model+'\n')
+ plane_rhs = (o1+i_d.t_o[0])*n1+(o2+i_d.t_o[1])*n2+(o3+i_d.t_o[2])*n3
+ target.write('# plane normal and translation ' + str(n1)+'\t'+str(n2)+'\t'+str(n3)+'\t'+str(plane_rhs)+'\n')
                                         #target.write(str(src_output.GetNumberOfPoints())+'\n')
                                 
-  target.write('type, xyz # type of profile (rad or xyz)\n')
-  target.write('localcs,origin,0,0,0 # origin of local coordinate system\n')
-  target.write('localcs,xaxis,1,0,0 # x axis direction of local coordinate system\n')
-  target.write('localcs,yaxis,0,1,0 # y axis direction of local coordinate system\n')
-  target.write('localcs,zaxis,0,0,1 # z axis direction of local coordinate system\n')
-  target.write('tolerance, 1.00E-08 # tolerance\n')
-  if (i_d.turbulence_model == 'none'):
+ target.write('type, xyz # type of profile (rad or xyz)\n')
+ target.write('localcs,origin,0,0,0 # origin of local coordinate system\n')
+ target.write('localcs,xaxis,1,0,0 # x axis direction of local coordinate system\n')
+ target.write('localcs,yaxis,0,1,0 # y axis direction of local coordinate system\n')
+ target.write('localcs,zaxis,0,0,1 # z axis direction of local coordinate system\n')
+ target.write('tolerance, 1.00E-08 # tolerance\n')
+ if (i_d.turbulence_model == 'none'):
 	target.write('scale,1,1,1,1,1,1 # scaling factors\n')
-  else:
+ else:
 	target.write('scale,1,1,1,1,1,1,1,1 # scaling factors\n')
-  if (i_d.turbulence_model == 'k_epsilon'):
+ if (i_d.turbulence_model == 'k_epsilon'):
                 target.write('data,x,y,z,u,v,w,k,e\n')
-  if (i_d.turbulence_model == 'k_omega'):
+ if (i_d.turbulence_model == 'k_omega'):
         	target.write('data,x,y,z,u,v,w,k,sdr\n')
-  else:
+ else:
         	target.write('data,x,y,z,u,v,w\n')
-  if (len(var_list) > 1):
+ if (len(var_list) > 1):
 	for j in range (0,grid.GetNumberOfCells()):
         	target.write(sp.str(points[j,0])+','+sp.str(points[j,1])+','+sp.str(points[j,2])+','+sp.str(u[j,0])+','+sp.str(u[j,1])+','+sp.str(u[j,2]) + ',' + sp.str(tke[j])+','+sp.str(epsi[j])+'\n')
-  else:
+ else:
 	for j in range (0,grid.GetNumberOfCells()):
         	target.write(sp.str(points[j,0])+','+sp.str(points[j,1])+','+sp.str(points[j,2])+','+sp.str(u[j,0])+','+sp.str(u[j,1])+','+sp.str(u[j,2]) + '\n')
 	                       
                  
-  target.close()
+ target.close()
 
  # convert modes 
 
@@ -1761,43 +1761,43 @@ def pod2prf(i_d):
         i_d.modes[i,:,0:3] = points
         i_d.modes[i,:,3:] = u                                     
 
-    else: # write .prf
+    
 
-     filename = rdir +'PODFS_mode_'+counter+'.prf'
+    filename = rdir +'PODFS_mode_'+counter+'.prf'
 
-     target = open(filename,'w')
+    target = open(filename,'w')
 
-     target.write('# ' + 'PODFS_mode_'+counter + ' # name of the profile\n')
-     target.write('# turbulence model, ' + i_d.turbulence_model+'\n')
-     plane_rhs = (o1)*n1+(o2)*n2+(o3)*n3
-     target.write('# plane normal and translation ' + str(n1)+'\t'+str(n2)+'\t'+str(n3)+'\t'+str(plane_rhs)+'\n')
+    target.write('# ' + 'PODFS_mode_'+counter + ' # name of the profile\n')
+    target.write('# turbulence model, ' + i_d.turbulence_model+'\n')
+    plane_rhs = (o1)*n1+(o2)*n2+(o3)*n3
+    target.write('# plane normal and translation ' + str(n1)+'\t'+str(n2)+'\t'+str(n3)+'\t'+str(plane_rhs)+'\n')
                                         #target.write(str(src_output.GetNumberOfPoints())+'\n')
                                 
-     target.write('type, xyz # type of profile (rad or xyz)\n')
-     target.write('localcs,origin,0,0,0 # origin of local coordinate system\n')
-     target.write('localcs,xaxis,1,0,0 # x axis direction of local coordinate system\n')
-     target.write('localcs,yaxis,0,1,0 # y axis direction of local coordinate system\n')
-     target.write('localcs,zaxis,0,0,1 # z axis direction of local coordinate system\n')
-     target.write('tolerance, 1.00E-08 # tolerance\n')
-     if (i_d.turbulence_model == 'none'):
+    target.write('type, xyz # type of profile (rad or xyz)\n')
+    target.write('localcs,origin,0,0,0 # origin of local coordinate system\n')
+    target.write('localcs,xaxis,1,0,0 # x axis direction of local coordinate system\n')
+    target.write('localcs,yaxis,0,1,0 # y axis direction of local coordinate system\n')
+    target.write('localcs,zaxis,0,0,1 # z axis direction of local coordinate system\n')
+    target.write('tolerance, 1.00E-08 # tolerance\n')
+    if (i_d.turbulence_model == 'none'):
         target.write('scale,1,1,1,1,1,1 # scaling factors\n')
-     else:
+    else:
         target.write('scale,1,1,1,1,1,1,1,1 # scaling factors\n')
-     if (i_d.turbulence_model == 'k_epsilon'):
-                target.write('data,x,y,z,u,v,w,k,e\n')
-     if (i_d.turbulence_model == 'k_omega'):
+    if (i_d.turbulence_model == 'k_epsilon'):
+               target.write('data,x,y,z,u,v,w,k,e\n')
+    if (i_d.turbulence_model == 'k_omega'):
         	target.write('data,x,y,z,u,v,w,k,sdr\n')
-     else:
+    else:
 	target.write('data,x,y,z,u,v,w\n')
-     if (len(var_list) > 1):
+    if (len(var_list) > 1):
     	for j in range (0,grid.GetNumberOfCells()):
         	target.write(sp.str(points[j,0])+','+sp.str(points[j,1])+','+sp.str(points[j,2])+','+sp.str(u[j,0])+','+sp.str(u[j,1])+','+sp.str(u[j,2]) + ',' + sp.str(tke[j])+','+sp.str(epsi[j])+'\n')
                                        
-     else:                                   
+    else:                                   
         for j in range (0,grid.GetNumberOfCells()):
                 target.write(sp.str(points[j,0])+','+sp.str(points[j,1])+','+sp.str(points[j,2])+','+sp.str(u[j,0])+','+sp.str(u[j,1])+','+sp.str(u[j,2]) + '\n')
  
-     target.close()
+    target.close()
 
 
 
