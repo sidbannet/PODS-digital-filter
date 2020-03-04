@@ -88,6 +88,8 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 **Alessandro Soli** - *Applications to Compressor/Combustor coupling* - Loughborough University
 
+**Jonathan Gruendler** - *Applications to combustor/turbine coupling* - GLR, TU-Darmstadt
+
 For all inquiries, please contact Nick at treleaven@stfs.tu-darmstadt.de
 
 ## License
