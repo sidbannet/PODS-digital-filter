@@ -1,0 +1,304 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Quickstart Guide &mdash; Digital Filter PODFS 1.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Options" href="options.html" />
+    <link rel="prev" title="Digital Filter PODFS" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Digital Filter PODFS
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-the-tests">Running the tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contributing">Contributing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#versioning">Versioning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#authors">Authors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#license">License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acknowledgments">Acknowledgments</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="options.html">Options</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Digital Filter PODFS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Quickstart Guide</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/usage/quickstart.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="quickstart-guide">
+<h1>Quickstart Guide<a class="headerlink" href="#quickstart-guide" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<p>You will need a working version of Python 2 on your system. We recommend the Anaconda Miniconda system which can be downloaded from <a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html">here</a>.</p>
+<p>Once you have installed miniconda and have a new environment running you will require the following prerequisites:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Numpy</span>
+<span class="n">Matplotlib</span>
+<span class="n">Scipy</span>
+<span class="n">VTK</span>
+<span class="n">h5py</span>
+</pre></div>
+</div>
+<p>If you have conda installed, you can install the prerequisites with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">numpy</span> <span class="n">vtk</span> <span class="n">scipy</span> <span class="n">vtk</span> <span class="n">h5py</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>Simply clone the repository using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">ncwt3</span><span class="nd">@bitbucket</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">digital_filters_podfs</span><span class="o">/</span><span class="n">digital_filters_podfs</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<p>You can run the code by typing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">digitalfilters</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>to display the help menu.</p>
+</div>
+<div class="section" id="running-the-tests">
+<h2>Running the tests<a class="headerlink" href="#running-the-tests" title="Permalink to this headline">¶</a></h2>
+<p>Currently there are no official tests for the code but a minimum working example can be run with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">digitalfilters</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">n</span> <span class="mi">5</span>
+</pre></div>
+</div>
+<p>which will create 5 snapshots of a turbulent flow field and generate the PODFS model of it. You can view the resulting mean field using ParaView which is generated in:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PODFS</span><span class="o">/</span><span class="n">spatial_mean_field_velocity</span><span class="o">.</span><span class="n">vtk</span>
+</pre></div>
+</div>
+<p>The program writes out the following ASCII files:</p>
+<ul class="simple">
+<li>PODFS_mean.prf - The mean field with columns X,Y,Z,U,V,W</li>
+<li><a href="#id1"><span class="problematic" id="id2">PODFS_mode_</span></a>????.prf - The POD modes wih columns X,Y,Z,u,v,w</li>
+<li><dl class="first docutils">
+<dt>PODFS.dat - The PODFS control file which includes</dt>
+<dd><ol class="first last arabic">
+<li>The number of POD modes.</li>
+<li>The PODFS period in seconds.</li>
+<li>The number of Fourier Coefficients for each POD mode.</li>
+<li>The Fourier Coefficients.</li>
+</ol>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
+<p>Please create a new branch for all modifications and use the apporpriate branch naming conventions:</p>
+<p>feature/yourfeature - for new features</p>
+<p>bugfix/yourbugfix - for new bufixes</p>
+<p>Create a pull request when you have a working feature so we can integrate it into our code.</p>
+</div>
+<div class="section" id="versioning">
+<h2>Versioning<a class="headerlink" href="#versioning" title="Permalink to this headline">¶</a></h2>
+<p>We use <a class="reference external" href="http://semver.org/">SemVer</a> for versioning. For the versions available, see the <a class="reference external" href="https://bitbucket.org/digital_filters_podfs/digital_filters_podfs/downloads/?tab=tags">tags on this repository</a>.</p>
+<ul class="simple">
+<li>Version 1.1.0 - For cases that use assumed velocity profile, the mean velocity can now be rotated along with the plane.</li>
+<li>Version 1.0.0 - Initial release.</li>
+<li>Version 0.9.0 - Pre-release version.</li>
+</ul>
+</div>
+<div class="section" id="authors">
+<h2>Authors<a class="headerlink" href="#authors" title="Permalink to this headline">¶</a></h2>
+<p><strong>Max Staufer</strong> - <em>Initial work</em> - Rolls-Royce Deutschland</p>
+<p><strong>Nicholas Treleaven</strong> - <em>Project Lead</em> - Loughborough University/Rolls-Royce Deutschland/STFS, TU-Darmstadt</p>
+<p><strong>Alessandro Soli</strong> - <em>Applications to compressor/combustor coupling</em> - Loughborough University</p>
+<p><strong>Jonathan Gruendler</strong> - <em>Applications to combustor/turbine coupling and Python 3</em> - GLR, TU-Darmstadt</p>
+<p><strong>Vishal Saini</strong> - <em>Radial combustor inlet and performance improvements</em> - Loughborough University</p>
+<p>For all inquiries, please contact Nick at <a class="reference external" href="mailto:treleaven&#37;&#52;&#48;stfs&#46;tu-darmstadt&#46;de">treleaven<span>&#64;</span>stfs<span>&#46;</span>tu-darmstadt<span>&#46;</span>de</a></p>
+</div>
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>We need a License?</p>
+</div>
+<div class="section" id="acknowledgments">
+<h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>The initail inspiration for the PODFS method comes from work completed with Laurent Cordier and Laborotoire PPRIME in Poitiers, France.</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="options.html" class="btn btn-neutral float-right" title="Options" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../index.html" class="btn btn-neutral float-left" title="Digital Filter PODFS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Nicholas Treleaven
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
