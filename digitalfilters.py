@@ -20,10 +20,13 @@ import math
 import nplotlib as plt
 import HDF5 
 
+import time
+import scipy.signal as scSig
+
 PROG = 'DigitalFilters'
 VERSION = '1.1.0'
 
-Pi = 3.1415927
+Pi = np.pi # 3.1415927
 
 class obj(object):
 	a=0
@@ -77,23 +80,57 @@ def calccoeff(a,n,ln):
       a[i] = np.exp(-Pi*k*k/(2.0*ln*ln))
       norm = norm+a[i]**2
    
-   print np.amax(a)
+   # print np.amax(a)
 
    norm = np.sqrt(norm)
    b = a/norm
 
-   print np.amax(b)
+   # print np.amax(b)
    return b
 
 def filter3D(x,y,a,jma,kma,nfx,nfy,nfz):
 
    #  Filtering of the data. Input :x Output y                        *
    #  Filter coefficients: a  Filter length: 2*( nx,ny,nz )+1
-   
+
    for k in range(kma):
       for j in range(jma):
           y[j,k] = np.sum(x[:,j:j+2*nfy+1,k:k+2*nfz+1]*a[0,:,:,:]) #y_filtered
-          
+
+def filter3DSciPy1D(x,y,a,jma,kma,lnx,lny,lnz,nfx,nfy,nfz):
+   '''
+   Using 1D Scipy convolves in X, Y and Z directions separately. Options selected:
+   'valid' output consists only of those elements that do not rely on the zero-padding.
+   'direct' convolution is determined from sums, the definition of convolution, no fft.
+   '''
+
+   ax = np.zeros(nfx*2+1)
+   ay = np.zeros(nfy*2+1)
+   az = np.zeros(nfz*2+1)
+
+   bx = calccoeff(ax,nfx,lnx)
+   by = calccoeff(ay,nfy,lny)
+   bz = calccoeff(az,nfz,lnz)
+
+   # Making the dimensions appropriate for SciPy convolve 
+   bx = np.expand_dims(np.expand_dims(bx,1),2)
+   by = np.expand_dims(np.expand_dims(by,0),2)
+   bz = np.expand_dims(np.expand_dims(bz,0),1)
+
+   tmp1 = scSig.convolve(x,    bx, mode='valid', method='direct')
+
+   # Alternative
+   '''
+   tmp2 = scSig.convolve(tmp1, by, mode='same', method='direct')
+   tmp3 = scSig.convolve(tmp2, bz, mode='same', method='direct')
+   y[:,:] = tmp3[0, nfy:-nfy-1, nfz:-nfz-1]
+
+   '''
+
+   tmp2 = scSig.convolve(tmp1, by, mode='valid', method='direct')
+   tmp3 = scSig.convolve(tmp2, bz, mode='valid', method='direct')
+   y[:,:] = tmp3[0, :-1, :-1]
+
 
 def adapt1d(yu,yv,yw,uin,uuin,vvin,wwin,uwin,jma,kma):		   
    
@@ -1308,7 +1345,10 @@ def main():
    yv = np.zeros((jma,kma))
    yw = np.zeros((jma,kma))
    
-   
+   yun = np.zeros((jma,kma)) 
+   yvn = np.zeros((jma,kma))
+   ywn = np.zeros((jma,kma))
+
    #pvar = np.zeros(nsteps)
    
    # define input object
@@ -1339,12 +1379,34 @@ def main():
    for i in range(nsteps):
    
      print 'Generating inlet ' ,i+1, ' of ', nsteps
- 
     
+     ''' Uncomment to compare original and SciPy Convolutions
+     timeStart = time.time() 
      filter3D(xu,yu,a,jma,kma,nfx,nfy,nfz) 
      filter3D(xv,yv,a,jma,kma,nfx,nfy,nfz)
      filter3D(xw,yw,a,jma,kma,nfx,nfy,nfz)        
-  
+     print "Nick's LOOPS:", time.time()-timeStart
+
+     timeStart = time.time() 
+     filter3DSciPy1D(xu,yun,a,jma,kma,lnx,lny,lnz,nfx,nfy,nfz)
+     filter3DSciPy1D(xv,yvn,a,jma,kma,lnx,lny,lnz,nfx,nfy,nfz)
+     filter3DSciPy1D(xw,ywn,a,jma,kma,lnx,lny,lnz,nfx,nfy,nfz)
+     print "SciPy's LOOPS:", time.time()-timeStart
+
+     ### ERROR calculations ###
+     print 'L2-norm of error: ', np.linalg.norm(yun-yu, ord='fro')
+     print 'L2-norm of error: ', np.linalg.norm(yvn-yv, ord='fro')
+     print 'L2-norm of error: ', np.linalg.norm(ywn-yw, ord='fro')
+     ###
+     ''' 
+
+     timeStart = time.time() 
+     filter3DSciPy1D(xu,yu,a,jma,kma,lnx,lny,lnz,nfx,nfy,nfz)
+     filter3DSciPy1D(xv,yv,a,jma,kma,lnx,lny,lnz,nfx,nfy,nfz)
+     filter3DSciPy1D(xw,yw,a,jma,kma,lnx,lny,lnz,nfx,nfy,nfz)
+     print "CPU time SciPy's LOOPS (s):", time.time()-timeStart
+
+
      if profilefile.endswith('.prf'):
  	adapt2prf(yu,yv,yw,U,V,W,uu,vv,ww,uv,uw,vw,jma,kma)
      elif mean_profile in ['double-hyperbolic-tangent', \
@@ -1382,6 +1444,7 @@ def main():
      if verbose: # write fields!
          i_d.time = i*dt
          pod.save_plane(A[:,i],i_d)
+
 
    # prepare for POD
    if verbose:
