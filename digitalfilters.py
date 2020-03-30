@@ -1298,11 +1298,11 @@ def main():
    coeff3D(a,nfx,nfy,nfz,lnx,lny,lnz)
 
    xu = np.random.uniform(low=-pdfr, high=pdfr, 
-                          size=(nfx*2+1,nfy*2+1+jma,nfz*2+1+kma)) #random fields
+                          size=(nfx*2+1,nfy*2+jma,nfz*2+kma)) #random fields
    xv = np.random.uniform(low=-pdfr, high=pdfr, 
-                          size=(nfx*2+1,nfy*2+1+jma,nfz*2+1+kma)) #random fields
+                          size=(nfx*2+1,nfy*2+jma,nfz*2+kma)) #random fields
    xw = np.random.uniform(low=-pdfr, high=pdfr, 
-                          size=(nfx*2+1,nfy*2+1+jma,nfz*2+1+kma)) #random fields
+                          size=(nfx*2+1,nfy*2+jma,nfz*2+kma)) #random fields
 
    yu = np.zeros((jma,kma))
    yv = np.zeros((jma,kma))
@@ -1361,13 +1361,13 @@ def main():
      
    
      xu[nfx*2,:,:] = np.random.uniform(low=-pdfr, high=pdfr, 
-                          size=(nfy*2+1+jma,nfz*2+1+kma)) #random fields
+                          size=(nfy*2+jma,nfz*2+kma)) #random fields
 
      xv[nfx*2,:,:] = np.random.uniform(low=-pdfr, high=pdfr, 
-                          size=(nfy*2+1+jma,nfz*2+1+kma)) #random fields
+                          size=(nfy*2+jma,nfz*2+kma)) #random fields
 			  
      xw[nfx*2,:,:] = np.random.uniform(low=-pdfr, high=pdfr, 
-                          size=(nfy*2+1+jma,nfz*2+1+kma)) #random fields
+                          size=(nfy*2+jma,nfz*2+kma)) #random fields
 
      #pvar[i] = yu[int(jma/2),int(kma/2)]
      
