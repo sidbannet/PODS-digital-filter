@@ -1,5 +1,5 @@
 Quickstart Guide
-===============
+================
 
 
 
@@ -17,11 +17,12 @@ Once you have installed miniconda and have a new environment running you will re
 	Scipy
 	VTK
 	h5py
+	sphinx
 
 
 If you have conda installed, you can install the prerequisites with::
 
-	conda install numpy vtk scipy vtk h5py
+	conda install numpy vtk scipy vtk h5py sphinx
 
 Installation
 ############
@@ -74,6 +75,8 @@ bugfix/yourbugfix - for new bufixes
 
 Create a pull request when you have a working feature so we can integrate it into our code.
 
+**PLEASE** remember to write documentation for your features using `sphinx <https://www.sphinx-doc.org/en/master/>`_
+
 Versioning
 ##########
 
@@ -103,7 +106,16 @@ For all inquiries, please contact Nick at treleaven@stfs.tu-darmstadt.de
 License
 #######
 
-We need a License?
+* `BSD-3-Clause <https://opensource.org/licenses/BSD-3-Clause>`_
+* Copyright 2020 Nicholas Treleaven
+
+Publications
+############
+
+If you using the PODFS method in your work please reference:
+
+* Treleaven, Nicholas CW, et al. "An efficient method to reproduce the effects of acoustic forcing on gas turbine fuel injectors in incompressible simulations." Flow, Turbulence and Combustion 103.2 (2019): 417-437
+
 
 Acknowledgments
 ###############

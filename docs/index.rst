@@ -15,6 +15,7 @@ This repository contains the PODFS/digital-filter code used to generate turbulen
 
    usage/quickstart
    usage/options
+   usage/CFDCodeIntegration
 
 .. Indices and tables
 .. ==================
