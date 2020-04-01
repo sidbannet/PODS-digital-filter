@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import proj3d
 import numpy as np
 
-mpl.use('Agg')
+mpl.use('tkAgg')
 
 
 # import matplotlib.pyplot as plt
@@ -52,14 +52,15 @@ def axis(var):
 #     return True
 
 # =======================================================================
-def bar(fig, x, y, x_axis, y_axis, filename):
-    plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
+def bar(fig, x, y, x_axis, y_axis, filename, label):
+    # plt.rc('text', usetex=True)
+    # plt.rc('font', family='serif')
 
     plt.figure(fig)
-    f = plt.bar(x, y)
+    f = plt.bar(x, y, log=True, label = label, alpha = 0.7)
     plt.xlabel('$' + x_axis + '$')
     plt.ylabel('$' + y_axis + '$')
+    plt.legend()
 
     if (filename != ' '):
         plt.savefig(filename + '.png', bbox_inches='tight')
@@ -101,11 +102,11 @@ def contourf(MinV, MaxV, fig, x, y, z, levels, x_axis, y_axis, c_bar, filename, 
             'size': 12}
     plt.rc('font', **font)
     plt.figure(fig, figsize=figsize)
-    f = plt.contourf(x, y, z, levels, cmap=plt.get_cmap('jet'), vmin=MinV, vmax=MaxV)
+    f = plt.contourf(x, y, z, levels, cmap=plt.get_cmap('coolwarm'), vmin=MinV, vmax=MaxV)
     plt.xlabel(x_axis)
     plt.ylabel(y_axis)
 
-    m = plt.cm.ScalarMappable(cmap=plt.get_cmap('jet'))
+    m = plt.cm.ScalarMappable(cmap=plt.get_cmap('coolwarm'))
     m.set_array(z)
     m.set_clim(MinV, MaxV)
     cbar = plt.colorbar(m)
@@ -117,7 +118,7 @@ def contourf(MinV, MaxV, fig, x, y, z, levels, x_axis, y_axis, c_bar, filename, 
         plt.savefig(filename + '.png', bbox_inches='tight', dpi=200)
 
 
-def contourf2(fig, x, y, z, levels, x_axis, y_axis, c_bar, filename, figsize=(8, 6)):
+def contourf2(fig, unit, x, y, z, levels, x_axis, y_axis, c_bar, filename, figsize=(8, 6)):
     # plt.rc('text', usetex=True)
     # plt.rc('font', family='serif')
 
@@ -126,12 +127,12 @@ def contourf2(fig, x, y, z, levels, x_axis, y_axis, c_bar, filename, figsize=(8,
             'size': 8}
     plt.rc('font', **font)
     plt.figure(fig, figsize=figsize)
-    f = plt.contourf(x, y, z, levels, cmap=plt.get_cmap('jet'))
+    f = plt.contourf(x, y, z, levels, cmap=plt.get_cmap('coolwarm'))
     plt.xlabel(x_axis)
     plt.ylabel(y_axis)
 
     cbar = plt.colorbar(f)
-    cbar.ax.set_ylabel('$' + c_bar + '$')
+    cbar.ax.set_ylabel(c_bar + ' [' + '$' + unit + '$' + ']')
     # plt.axes().set_aspect('equal')
     #    plt.axis('off')
     #     f.tight_layout()
@@ -197,6 +198,32 @@ def timeseries(fig, y, t, y_axis, filename):
 
     plt.close(fig)
 
+def timeseries_comp(fig, y1, y2, t, y_axis, filename):
+    #    plt.rc('text', usetex=True)
+    #    plt.rc('font', family='serif')
+    font = {'family': 'normal',
+            'weight': 'bold',
+            'size': 12}
+
+    plt.rc('font', **font)
+
+    major_ticks = np.linspace(np.amin(t), np.amax(t), 5)
+
+    plt.figure(fig)
+    f1 = plt.plot(t, y1, label='original')
+    f2 = plt.plot(t, y2, label='constructed from fcs')
+    plt.legend()
+
+    plt.xticks(major_ticks)
+    plt.xlabel('$Time\, (s)$')
+    plt.ylabel('$' + y_axis + '$')
+    plt.grid(True)
+
+    if (filename != ' '):
+        plt.savefig(filename + '.png', bbox_inches='tight')
+
+    plt.close(fig)
+
 
 def plot(fig, y, t, y_axis, x_axis, filename):
     #    plt.rc('text', usetex=True)
@@ -220,18 +247,21 @@ def plot(fig, y, t, y_axis, x_axis, filename):
         plt.savefig(filename + '.png', bbox_inches='tight')
 
 
-def scatter(fig, y, t, y_axis, x_axis, filename):
+def scatter(fig, x, y, t, y_axis, x_axis, filename, figsize=(8, 6)):
     #    plt.rc('text', usetex=True)
     #    plt.rc('font', family='serif')
 
     font = {'family': 'normal',
             'weight': 'bold',
             'size': 22}
-
-    plt.figure(fig)
-    f = plt.scatter(t, y, s=1)
+    c_bar = fig
+    plt.figure(fig, figsize=figsize)
+    f = plt.scatter(x, y, c = t, s=2, cmap=plt.get_cmap('jet'))
     plt.xlabel('$' + x_axis + '$', fontsize=12)
     plt.ylabel('$' + y_axis + '$', fontsize=12)
+    cbar = plt.colorbar(f)
+    cbar.ax.set_ylabel('$' + c_bar + '$')
+
 
     if (filename != ' '):
         plt.savefig(filename + '.png', bbox_inches='tight')
@@ -499,13 +529,14 @@ def PSD3(fig, y, y1, y2, t, y_axis, filename):
         plt.savefig(filename + '.png', bbox_inches='tight')
 
 
-def eigs(fig, y, y_axis, filename):
+def eigs(fig, y, y_axis, filename, label):
     # plt.rc('text', usetex=True)
     # plt.rc('font', family='serif')
     plt.figure(fig)
-    f = plt.loglog(y, '.-')
+    f = plt.loglog(y, '.-', label=label)
     plt.xlabel(r"Mode Number")
     plt.ylabel('$' + y_axis + '$')
+    plt.legend()
 
     if (filename != ' '):
         plt.savefig(filename + '.png', bbox_inches='tight')

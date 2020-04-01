@@ -133,7 +133,7 @@ if len(sys.argv) == 1:
 (options, args) = parser.parse_args()
 
 # settings for plot output
-plot_general = False  # general plot flag
+plot_general = True  # general plot flag
 plot_mean = True  # plot mean fields
 plot_rand = True  # plot random fields
 plot_corr = True  # plot correlated fields
@@ -165,4 +165,4 @@ print('Filterzeitschritt: {:8e} | Zeitschritt Inletdateien:  {:8e}'.format(digfi
                                                                            digfilter.dt_split))
 
 # apply filter and create snapshots
-digfilter.filtering(options.dt, options.periodic)
+# digfilter.filtering(options.dt, options.periodic)
