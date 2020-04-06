@@ -476,7 +476,7 @@ def read_profile(profilefile,kma):
    
    return U,uu,vv,ww,uw
 
-def read_prf(profilefile,res,mdot,den,bulk_velocity,non_dim):
+def read_prf(profilefile,res,mdot,den,bulk_velocity,non_dim,TestGrad):
 
    f = open(profilefile,'r')
    not_data = True
@@ -493,33 +493,35 @@ def read_prf(profilefile,res,mdot,den,bulk_velocity,non_dim):
    uudata=vvdata=wwdata=kdata=epsdata=sdrdata=-1 # use this as flag later        
 
    for i in range (1,len(data)):
-           if data[i] == 'x':
+           if data[i].strip() == 'x':
                    xdata = i-1
-           elif data[i] == 'y':
+           elif data[i].strip() == 'y':
                    ydata = i-1
-           elif data[i] == 'z':
+           elif data[i].strip() == 'z':
                    zdata = i-1
-           elif data[i] == 'u':
+           elif data[i].strip() == 'u':
                    udata = i-1
-           elif data[i] == 'v':
+           elif data[i].strip() == 'v':
                    vdata = i-1
-           elif data[i] == 'w':
+           elif data[i].strip() == 'w':
                    wdata = i-1
-           elif data[i] == 'k':
+           elif data[i].strip() == 'k':
                    kdata = i-1
-           elif data[i] == 'e':
+           elif data[i].strip() == 'e':
                    epsdata = i-1
-           elif data[i] == 'sdr':
+           elif data[i].strip() == 'sdr':
                    sdrdata = i-1
-           elif data[i] == 'uu':
+           elif data[i].strip() == 'uu':
                    uudata = i-1
-           elif data[i] == 'vv':
+           elif data[i].strip() == 'vv':
                    vvdata = i-1
-           elif data[i] == 'ww':
+           elif data[i].strip() == 'ww':
                    wwdata = i-1
 
-
-   profiledata = np.loadtxt(profilefile,skiprows = data_count)
+   try:
+   	profiledata = np.loadtxt(profilefile,skiprows = data_count)
+   except:
+	profiledata = np.loadtxt(profilefile,skiprows = data_count,delimiter=',')
    npoints = profiledata.shape[0]
 
    xArray = profiledata[:,xdata]
@@ -745,6 +747,10 @@ def read_prf(profilefile,res,mdot,den,bulk_velocity,non_dim):
    #dU = interpolate.CloughTocher2DInterpolator(points[1:,:].T,UArray,tol=1e-6)
    #dudy= dU(y,z)
 
+   if TestGrad:
+	eps = np.ones(np.shape(U),dtype=np.float64)
+	k = np.ones(np.shape(U),dtype=np.float64)
+	k[0]=eps[0]=0.0
    flag = np.where(eps==0.0)
    flag1 = np.where(U==0.0)
    U[flag] = 0
@@ -753,16 +759,21 @@ def read_prf(profilefile,res,mdot,den,bulk_velocity,non_dim):
    k[flag] = 0
    eps[flag1]=0   
 
+   if TestGrad:
+	U[:]=1*y+2*z
+	V[:]=3*y+4*z
+	W[:]=5*y+6*z
+
    dU = np.gradient(U,res)
    dV = np.gradient(V,res)
    dW = np.gradient(W,res)
 
-   dUdy=dU[0]
-   dUdz=dU[1]
-   dVdy=dV[0]
-   dVdz=dV[1]
-   dWdy=dW[0]
-   dWdz=dW[1]
+   dUdy=dU[1]
+   dUdz=dU[0]
+   dVdy=dV[1]
+   dVdz=dV[0]
+   dWdy=dW[1]
+   dWdz=dW[0]
 
    dUdy[flag]=0
    dUdz[flag]=0
@@ -772,13 +783,14 @@ def read_prf(profilefile,res,mdot,den,bulk_velocity,non_dim):
    dWdz[flag]=0
 
    # smooth gradients (may not be necessary)
-   dUdy1=dUdy.copy()
-   dUdz1=dUdz.copy()
-   dVdy1=dVdy.copy()
-   dVdz1=dVdz.copy()
-   dWdy1=dWdy.copy()
-   dWdz1=dWdz.copy()
-   for i in range(1,kma-1):
+   if not TestGrad:
+    dUdy1=dUdy.copy()
+    dUdz1=dUdz.copy()
+    dVdy1=dVdy.copy()
+    dVdz1=dVdz.copy()
+    dWdy1=dWdy.copy()
+    dWdz1=dWdz.copy()
+    for i in range(1,kma-1):
 	for j in range (1,jma-1):
 		dUdy[i,j]=np.mean(dUdy[i-1:i+1,j-1:j+1])
 		dUdz[i,j]=np.mean(dUdz[i-1:i+1,j-1:j+1])
@@ -791,27 +803,27 @@ def read_prf(profilefile,res,mdot,den,bulk_velocity,non_dim):
 	y=y/np.amax(z)
 	z=z/np.amax(z)
 
-   plt.contourf(1,y,z,dUdy,100,'x','y','dudy','PODFS/dudy',figsize=(8,8*kma/jma))
+   plt.contourf(1,y,z,dUdy,100,'y','z','dudy','PODFS/dudy',figsize=(8,8*kma/jma))
    plt.close(1)
-   plt.contourf(2,y,z,dUdz,100,'x','y','dudz','PODFS/dudz',figsize=(8,8*kma/jma))
+   plt.contourf(2,y,z,dUdz,100,'y','z','dudz','PODFS/dudz',figsize=(8,8*kma/jma))
    plt.close(2)
-   plt.contourf(3,y,z,dVdy,100,'x','y','dvdy','PODFS/dvdy',figsize=(8,8*kma/jma))
+   plt.contourf(3,y,z,dVdy,100,'y','z','dvdy','PODFS/dvdy',figsize=(8,8*kma/jma))
    plt.close(3)
-   plt.contourf(4,y,z,dVdz,100,'x','y','dvdz','PODFS/dvdz',figsize=(8,8*kma/jma))
+   plt.contourf(4,y,z,dVdz,100,'y','z','dvdz','PODFS/dvdz',figsize=(8,8*kma/jma))
    plt.close(4)
-   plt.contourf(5,y,z,dWdy,100,'x','y','dwdy','PODFS/dwdy',figsize=(8,8*kma/jma))
+   plt.contourf(5,y,z,dWdy,100,'y','z','dwdy','PODFS/dwdy',figsize=(8,8*kma/jma))
    plt.close(5)
-   plt.contourf(6,y,z,dWdz,100,'x','y','dwdz','PODFS/dwdz',figsize=(8,8*kma/jma))
+   plt.contourf(6,y,z,dWdz,100,'y','z','dwdz','PODFS/dwdz',figsize=(8,8*kma/jma))
    plt.close(6)
-   plt.contourf(7,y,z,U,100,'x','y','U','PODFS/U',figsize=(8,8*kma/jma))
+   plt.contourf(7,y,z,U,100,'y','z','U','PODFS/U',figsize=(8,8*kma/jma))
    plt.close(7)
-   plt.contourf(8,y,z,V,100,'x','y','V','PODFS/V',figsize=(8,8*kma/jma))
+   plt.contourf(8,y,z,V,100,'y','z','V','PODFS/V',figsize=(8,8*kma/jma))
    plt.close(8)
-   plt.contourf(9,y,z,W,100,'x','y','W','PODFS/W',figsize=(8,8*kma/jma))
+   plt.contourf(9,y,z,W,100,'y','z','W','PODFS/W',figsize=(8,8*kma/jma))
    plt.close(9)
-   plt.contourf(10,y,z,eps,100,'x','y','eps','PODFS/eps',figsize=(8,8*kma/jma))
+   plt.contourf(10,y,z,eps,100,'y','z','eps','PODFS/eps',figsize=(8,8*kma/jma))
    plt.close(10)
-   plt.contourf(10,y,z,k,100,'x','y','k','PODFS/k',figsize=(8,8*kma/jma))
+   plt.contourf(10,y,z,k,100,'y','z','k','PODFS/k',figsize=(8,8*kma/jma))
    plt.close(10)
 
    # calculate dudx from incompressibility (only an approximation!)
@@ -951,17 +963,17 @@ def read_prf(profilefile,res,mdot,den,bulk_velocity,non_dim):
    vv[np.where(vv<0.0)]=0.0
    ww[np.where(ww<0.0)]=0.0
 
-   plt.contourf(11,y,z,uu,100,'x','y','uu','PODFS/uu',figsize=(8,8*kma/jma))
+   plt.contourf(11,y,z,uu,100,'y','z','uu','PODFS/uu',figsize=(8,8*kma/jma))
    plt.close(11)
-   plt.contourf(12,y,z,vv,100,'x','y','vv','PODFS/vv',figsize=(8,8*kma/jma))
+   plt.contourf(12,y,z,vv,100,'y','z','vv','PODFS/vv',figsize=(8,8*kma/jma))
    plt.close(12)
-   plt.contourf(13,y,z,ww,100,'x','y','ww','PODFS/ww',figsize=(8,8*kma/jma))
+   plt.contourf(13,y,z,ww,100,'y','z','ww','PODFS/ww',figsize=(8,8*kma/jma))
    plt.close(13)
-   plt.contourf(14,y,z,uv,100,'x','y','uv','PODFS/uv',figsize=(8,8*kma/jma))
+   plt.contourf(14,y,z,uv,100,'y','z','uv','PODFS/uv',figsize=(8,8*kma/jma))
    plt.close(14)
-   plt.contourf(15,y,z,uw,100,'x','y','uw','PODFS/uw',figsize=(8,8*kma/jma))
+   plt.contourf(15,y,z,uw,100,'y','z','uw','PODFS/uw',figsize=(8,8*kma/jma))
    plt.close(15)
-   plt.contourf(16,y,z,vw,100,'x','y','vw','PODFS/vw',figsize=(8,8*kma/jma))
+   plt.contourf(16,y,z,vw,100,'y','z','vw','PODFS/vw',figsize=(8,8*kma/jma))
    plt.close(16)
 
    U=np.flip(U,0)
@@ -1175,6 +1187,10 @@ def main():
                          help="Save the PODFS control file, mean and mode \
 			files as a single hdf5 file?",action='store_true')
 
+   parser.add_option("--test_gradients", dest="TestGrad",default=False,
+                         help="Test gradient calculation by setting U,V,W = \
+			1*Y+2*Z,3*Y+4*Z,5*Y+6*Z",action='store_true')
+
    if len(sys.argv) == 1:
 	       parser.parse_args(['--help'])
     
@@ -1240,7 +1256,7 @@ def main():
                 U,V,W,uu,vv,ww,uv,uw,vw,lnx,kma,jma \
 		,nx,ny,nz,ox,oy,oz = \
 		read_prf(profilefile,res,mdot,den,options.bulk_velocity \
-			,options.non_dim)
+			,options.non_dim,options.TestGrad)
 		lny=lnz=lnx
         else:
                 U,uu,vv,ww,uw = read_profile(profilefile,kma)
