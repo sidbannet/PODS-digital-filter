@@ -112,13 +112,18 @@ def filter3DSciPy1D(x,y,a,jma,kma,lnx,lny,lnz,nfx,nfy,nfz):
    by = calccoeff(ay,nfy,lny)
    bz = calccoeff(az,nfz,lnz)
 
+   #print bx.shape
+
    # Making the dimensions appropriate for SciPy convolve 
    bx = np.expand_dims(np.expand_dims(bx,1),2)
    by = np.expand_dims(np.expand_dims(by,0),2)
    bz = np.expand_dims(np.expand_dims(bz,0),1)
 
+   #print bx.shape
+
    tmp1 = scSig.convolve(x,    bx, mode='valid', method='direct')
 
+   #print tmp1.shape
    # Alternative
    '''
    tmp2 = scSig.convolve(tmp1, by, mode='same', method='direct')
@@ -128,8 +133,11 @@ def filter3DSciPy1D(x,y,a,jma,kma,lnx,lny,lnz,nfx,nfy,nfz):
    '''
 
    tmp2 = scSig.convolve(tmp1, by, mode='valid', method='direct')
+   #print tmp2.shape
    tmp3 = scSig.convolve(tmp2, bz, mode='valid', method='direct')
-   y[:,:] = tmp3[0, :-1, :-1]
+   #print tmp3[0, :-1, :-1].shape
+   #print y.shape
+   y[:,:] = tmp3[0, :, :]
 
 
 def adapt1d(yu,yv,yw,uin,uuin,vvin,wwin,uwin,jma,kma):		   
@@ -1409,7 +1417,7 @@ def main():
 	though for larger filter lengths and we should consider
 	a switch / test in future.
 
-
+     
      timeStart = time.time() 
      filter3D(xu,yu,a,jma,kma,nfx,nfy,nfz) 
      filter3D(xv,yv,a,jma,kma,nfx,nfy,nfz)
