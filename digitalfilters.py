@@ -837,12 +837,12 @@ def read_prf(profilefile,res,mdot,den,bulk_velocity,non_dim,TestGrad):
     dWdz1=dWdz.copy()
     for i in range(1,kma-1):
 	for j in range (1,jma-1):
-		dUdy[i,j]=np.mean(dUdy[i-1:i+1,j-1:j+1])
-		dUdz[i,j]=np.mean(dUdz[i-1:i+1,j-1:j+1])
-		dVdy[i,j]=np.mean(dVdy[i-1:i+1,j-1:j+1])
-		dVdz[i,j]=np.mean(dVdz[i-1:i+1,j-1:j+1])
-		dWdy[i,j]=np.mean(dWdy[i-1:i+1,j-1:j+1])
-		dWdz[i,j]=np.mean(dWdz[i-1:i+1,j-1:j+1])
+		dUdy[i,j]=np.mean(dUdy1[i-1:i+1,j-1:j+1])
+		dUdz[i,j]=np.mean(dUdz1[i-1:i+1,j-1:j+1])
+		dVdy[i,j]=np.mean(dVdy1[i-1:i+1,j-1:j+1])
+		dVdz[i,j]=np.mean(dVdz1[i-1:i+1,j-1:j+1])
+		dWdy[i,j]=np.mean(dWdy1[i-1:i+1,j-1:j+1])
+		dWdz[i,j]=np.mean(dWdz1[i-1:i+1,j-1:j+1])
 
    if non_dim:
 	y=y/np.amax(z)
