@@ -1381,6 +1381,19 @@ def main():
      print 'Generating inlet ' ,i+1, ' of ', nsteps
     
      ''' Uncomment to compare original and SciPy Convolutions
+
+	Vishal Saini at Loughborough has replaced the 3D filter with
+	3 1D convolutions from the scipy library. Improves filter 
+	performace by 10 times. The lines are left below if we ever
+	doubt the method or want to test the speed-up.
+
+	The convolution is performed in physical space (no fft) however
+	the scipy routine can also use the FFT method which should be 
+	faster, but isn't for filter sizes tested (l<15). It may be faster
+	though for larger filter lengths and we should consider
+	a switch / test in future.
+
+
      timeStart = time.time() 
      filter3D(xu,yu,a,jma,kma,nfx,nfy,nfz) 
      filter3D(xv,yv,a,jma,kma,nfx,nfy,nfz)
@@ -1400,11 +1413,9 @@ def main():
      ###
      ''' 
 
-     timeStart = time.time() 
      filter3DSciPy1D(xu,yu,a,jma,kma,lnx,lny,lnz,nfx,nfy,nfz)
      filter3DSciPy1D(xv,yv,a,jma,kma,lnx,lny,lnz,nfx,nfy,nfz)
      filter3DSciPy1D(xw,yw,a,jma,kma,lnx,lny,lnz,nfx,nfy,nfz)
-     print "CPU time SciPy's LOOPS (s):", time.time()-timeStart
 
 
      if profilefile.endswith('.prf'):
