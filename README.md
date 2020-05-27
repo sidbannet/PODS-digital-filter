@@ -10,3 +10,4 @@ The documentation is built and hosted by read-the-docs and may be accessed here:
 
 
 Please read the documentation before cloning, contributing or running the code.
+Digital_Filter_v2: Python 3, Object oriented

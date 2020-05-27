@@ -567,6 +567,7 @@ def read_prf(profilefile,res,mdot,den,bulk_velocity,non_dim,TestGrad):
    	profiledata = np.loadtxt(profilefile,skiprows = data_count)
    except:
 	profiledata = np.loadtxt(profilefile,skiprows = data_count,delimiter=',')
+
    npoints = profiledata.shape[0]
 
    xArray = profiledata[:,xdata]
@@ -1035,13 +1036,14 @@ def read_prf(profilefile,res,mdot,den,bulk_velocity,non_dim,TestGrad):
 		,kma,jma,xn,yn,zn,xc,yc,zc
 
 
-def build_profile(mean_profile,turb_profile,bulk_velocity,turbulence_intensity,kma):
+def build_profile(mean_profile,turb_profile,bulk_velocity,turbulence_intensity,kma,bulk_temperature,temperature_fluctuations):
 
    if mean_profile in ['hyperbolic-tangent','double-hyperbolic-tangent', \
 			'circular-hyperbolic-tangent','ring-hyperbolic-tangent']:
            
            y = np.linspace(-0.5,0.5,kma)
            U = bulk_velocity/2*(1.+np.tanh(10.*(-np.abs(y)+0.5)))
+           T = bulk_temperature/2*(1.+np.tanh(10.*(-np.abs(y)+0.5)))
            #print np.tanh(np.abs(y))
    else:
 	raise Exception('Invalid mean_profile chosen, type \'python digitalfilters.py -h\' for help.')
@@ -1051,15 +1053,17 @@ def build_profile(mean_profile,turb_profile,bulk_velocity,turbulence_intensity,k
            vv = (turbulence_intensity*U)**2
            ww = (turbulence_intensity*U)**2
            uw = 0.0*U
+           tt = temperature_fluctuations*T
    elif turb_profile == 'none':
 	   uu = 0.0
            vv = 0.0
            ww = 0.0
            uw = 0.0
+           tt = 0.0
    else:
 	raise Exception('Invalid turb_profile chosen, type \'python digitalfilters.py -h\' for help.')
 
-   return U,uu,vv,ww,uw
+   return U,uu,vv,ww,uw,T,tt
 
 def prof_rotation_matrix(nx,ny,nz):
 
@@ -1236,10 +1240,15 @@ def main():
                          help="Test gradient calculation by setting U,V,W = \
 			1*Y+2*Z,3*Y+4*Z,5*Y+6*Z",action='store_true')
 
-   if len(sys.argv) == 1:
-	       parser.parse_args(['--help'])
+   parser.add_option("--temperature", dest="temperature",default=False,
+                         help="Add temperture fluctuations" \
+                         ,action='store_true')
+
+#   if len(sys.argv) == 1:
+#	       parser.parse_args(['--help'])
     
    (options, args) = parser.parse_args()
+   
 
    profilefile = options.profilefile   
 
@@ -1249,12 +1258,14 @@ def main():
  
    # if profilefile == none then build profile from options...
    if profilefile == 'none':
-	mean_profile = options.mean_profile
-	turb_profile = options.turb_profile
-	bulk_velocity = options.bulk_velocity
-	turbulence_intensity = options.turbulence_intensity
+      mean_profile = options.mean_profile
+      turb_profile = options.turb_profile
+      bulk_velocity = options.bulk_velocity
+      turbulence_intensity = options.turbulence_intensity
+      bulk_temperature =  options.bulk_temperature
+      temperature_fluctuations = options.temperature_fluctuations
    else: # allow adoption of profile to different shapped inlets
-	mean_profile = options.mean_profile 	
+      mean_profile = options.mean_profile 	
 
    nsteps = options.nsteps  
 
@@ -1307,7 +1318,7 @@ def main():
                 U,uu,vv,ww,uw = read_profile(profilefile,kma)
    else: # contruct profile
        #exit()
-       U,uu,vv,ww,uw = build_profile(mean_profile,turb_profile,bulk_velocity,turbulence_intensity,kma)
+       U,uu,vv,ww,uw,T,tt = build_profile(mean_profile,turb_profile,bulk_velocity,turbulence_intensity,kma,bulk_temperature,temperature_fluctuations)
    if dt == 0.: #calculate dt from res and U
 	   flag = np.where(U**2+V**2+W**2!=0)
            dt = res/np.mean(U[flag])
@@ -1364,6 +1375,9 @@ def main():
                           size=(nfx*2+1,nfy*2+jma,nfz*2+kma)) #random fields
    xw = np.random.uniform(low=-pdfr, high=pdfr, 
                           size=(nfx*2+1,nfy*2+jma,nfz*2+kma)) #random fields
+   if temperature:
+   	xt = np.random.uniform(low=-pdfr, high=pdfr, 
+                          size=(nfx*2+1,nfy*2+jma,nfz*2+kma)) #random fields
 
    yu = np.zeros((jma,kma))
    yv = np.zeros((jma,kma))
@@ -1373,6 +1387,9 @@ def main():
    yvn = np.zeros((jma,kma))
    ywn = np.zeros((jma,kma))
 
+   if temperature:
+   	yt = np.zeros((jma,kma))
+   
    #pvar = np.zeros(nsteps)
    
    # define input object
@@ -1441,7 +1458,9 @@ def main():
      filter3DSciPy1D(xv,yv,a,jma,kma,lnx,lny,lnz,nfx,nfy,nfz)
      filter3DSciPy1D(xw,yw,a,jma,kma,lnx,lny,lnz,nfx,nfy,nfz)
 
-
+     if temperature:
+     	filter3DSCiPy1D(xt,yt,a,jma,kma,lnx,lny,lnz,nfx,nfy,nfz)
+  
      if profilefile.endswith('.prf'):
  	adapt2prf(yu,yv,yw,U,V,W,uu,vv,ww,uv,uw,vw,jma,kma)
      elif mean_profile in ['double-hyperbolic-tangent', \
@@ -1478,7 +1497,7 @@ def main():
  
      if verbose: # write fields!
          i_d.time = i*dt
-         pod.save_plane(A[:,i],i_d)
+         pod.save_plane(A[:,i],i_d,i)
 
 
    # prepare for POD
@@ -1497,14 +1516,14 @@ def main():
 
 
    # Do POD
-   pod.POD(A,nsteps,num_points,3,'false',[],'PODFS/','false',1.0e-15,nm,nmw,'false','false',grid,mean_field,dt,'velocity',1,nsteps,1,1,i_d)
+#   pod.POD(A,nsteps,num_points,3,'false',[],'PODFS/','false',1.0e-15,nm,nmw,'false','false',grid,mean_field,dt,'velocity',1,nsteps,1,1,i_d)
 
 
    # Compute fourier coefficients
-   pod.fourier_coefficients(i_d)
+#   pod.fourier_coefficients(i_d)
 
    # Save spatial modes as prfs
-   pod.pod2prf(i_d)
+#   pod.pod2prf(i_d)
 
    if hdf5: # save as HDF5 file
 	HDF5.write_HDF5(i_d)
