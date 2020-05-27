@@ -112,9 +112,19 @@ License
 Publications
 ############
 
+The methods used in this code are explained in:
+
+* Treleaven, N. C. W., et al. "Application of the PODFS method to inlet turbulence generated using the digital filter technique." Journal of Computational Physics (2020): 109541. `https://doi.org/10.1016/j.jcp.2020.109541 <https://doi.org/10.1016/j.jcp.2020.109541>`_. 
+
 If you using the PODFS method in your work please reference:
 
-* Treleaven, Nicholas CW, et al. "An efficient method to reproduce the effects of acoustic forcing on gas turbine fuel injectors in incompressible simulations." Flow, Turbulence and Combustion 103.2 (2019): 417-437
+* Treleaven, Nicholas CW, et al. "An efficient method to reproduce the effects of acoustic forcing on gas turbine fuel injectors in incompressible simulations." Flow, Turbulence and Combustion 103.2 (2019): 417-437. `https://doi.org/10.1007/s10494-019-00020-4 <https://doi.org/10.1007/s10494-019-00020-4>`_.
+
+The digital filter method as used is first explained here:
+
+* Klein, Markus, Amsini Sadiki, and Johannes Janicka. "A digital filter based generation of inflow data for spatially developing direct numerical or large eddy simulations." Journal of computational Physics 186.2 (2003): 652-665. `https://doi.org/10.1016/S0021-9991(03)00090-1 <https://doi.org/10.1016/S0021-9991(03)00090-1>`_.
+
+
 
 
 Acknowledgments
